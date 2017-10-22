@@ -1,0 +1,65 @@
+{{define "admin-home"}}
+{{template "header"}}
+{{template "nav"}}
+<h2>Admin Home</h2>
+{{if .Message}} <p>{{.Message}} </p> {{end}}
+<a href="/unpublishedbook">Unpublished book List</a><br><br>
+<a href="/publishedbook">Book List</a><br><br>
+<a href="/my-published-book">my published list</a><br><br>
+<a href="/publish-new-book">publish a new book</a><br><br>
+<a href="/my-unpublished-book">My book waiting for admin review</a><br><br>
+<a href="/user-list">User List</a><br><br>
+{{template "footer"}}
+{{end}}
+
+
+
+{{define "publisher-home"}}
+{{template "header"}}
+{{template "nav"}}
+<h2>Publisher Home</h2>
+{{if .Message}} <p>{{.Message}} </p> {{end}}
+<a href="/publishedbook">Book List</a><br><br>
+<a href="/my-published-book">my published list</a><br><br>
+<a href="/publish-new-book">publish a new book</a><br><br>
+<a href="/my-unpublished-book">My book waiting for admin review</a><br><br>
+
+<h3>My subscription list </h3> <br><br>
+<table>
+  {{if .Books}} {{range .Books}}
+    <tr>
+      <td> <a href="/view-book?book={{.BookId}}"> {{.Title}} </a> </td>
+
+      <td> Rating: {{.AvrgRating}} </td>
+      <td> <img src="/uploads/CoverPhoto/{{.Cover}}" height="42" width="42" > </td>
+    </tr>
+  {{end}}
+  {{end}}
+
+{{template "footer"}}
+{{end}}
+
+
+
+{{define "member-home"}}
+{{template "header"}}
+{{template "nav"}}
+<h2>Reader Home</h2>
+{{if .Message}} <p>{{.Message}} </p> {{end}}
+
+<a href="/publishedbook">Book List</a><br><br>
+
+<h3>My subscription list </h3> <br><br>
+<table>
+  {{if .Books}} {{range .Books}}
+    <tr>
+      <td> <a href="/view-book?book={{.BookId}}"> {{.Title}} </a> </td>
+
+      <td> Rating: {{.AvrgRating}} </td>
+      <td> <img src="/uploads/CoverPhoto/{{.Cover}}" height="42" width="42" > </td>
+    </tr>
+  {{end}}
+  {{end}}
+
+{{template "footer"}}
+{{end}}

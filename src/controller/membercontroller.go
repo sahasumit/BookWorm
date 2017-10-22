@@ -1,11 +1,11 @@
 package controller
 
-import (
-	"html/template"
-	"net/http"
-)
-
+/*
 func Member(res http.ResponseWriter, req *http.Request) {
+	log.Println("Method : Member, Member id ", Currentloggedin)
 	t, _ := template.ParseFiles("HTMLS/member/member.html")
-	t.Execute(res, nil)
+	var BL model.BookList
+	BL.Blist = model.SubscriptionList(Currentloggedin)
+	t.Execute(res, BL)
 }
+*/

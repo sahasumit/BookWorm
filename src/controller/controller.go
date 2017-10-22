@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"view"
 )
 
 func Pr() {
@@ -18,22 +19,18 @@ func Pr() {
 }
 
 func Home(res http.ResponseWriter, req *http.Request) {
-
-	t, _ := template.ParseFiles("HTMLS/index.html")
-	t.Execute(res, nil)
+	view.Home(res, req, "Sumit")
 }
 
-var Currentloggedin int
+var LoggedInUser model.User //set from session
 
 func Login(res http.ResponseWriter, req *http.Request) {
+	var data model.UData
 	log.Println("method login")
 	if req.Method != "POST" {
-
-		t, _ := template.ParseFiles("HTMLS/login.html")
-		t.Execute(res, nil)
+		view.Login(res, req, data)
 		return
 	}
-
 	//logging
 	req.ParseForm()
 	email := html.EscapeString(req.FormValue("email"))
@@ -44,39 +41,43 @@ func Login(res http.ResponseWriter, req *http.Request) {
 
 	if user.Email != email {
 		log.Println("User not found")
-		http.Redirect(res, req, "/login", 301)
+		data.Message = "Invalid Email!"
+		view.Login(res, req, data)
 		return
 	}
 	if user.Password != password {
 		log.Println("Password does not match")
-		http.Redirect(res, req, "/login", 301)
+		data.Message = "Incorrect Password!!"
+		view.Login(res, req, data)
 		return
 	}
 
 	//if user is block redirect him
 	if user.IsActive == 0 {
 		log.Println("User is blocked")
-		http.Redirect(res, req, "/login", 301)
+		data.Message = "User is Blocked!"
+		view.Login(res, req, data)
 		return
 	}
 
-	Currentloggedin = user.UserId
-	log.Println("Welcome success login id = " + strconv.Itoa(Currentloggedin))
+	//Set Session for newly loggedIn user here****
+	//**********************************************
+	LoggedInUser = user
+	log.Println("Welcome success login id = " + strconv.Itoa(LoggedInUser.UserId))
 	//redirect according to user type
-	if user.UserType == "member" {
-		http.Redirect(res, req, "/member", 301)
-		return
-	}
+	data.Message = "Welcome " + user.Name + "! Login Succesful!!"
+	data.User1 = user
+	UserHome(res, req) // redirect to user home(admin/pub/member)
+}
 
-	if user.UserType == "publisher" {
-		http.Redirect(res, req, "/publisher", 301)
-		return
+func UserHome(res http.ResponseWriter, req *http.Request) {
+	var data model.UData
+	if LoggedInUser.UserType != "Admin" {
+		data.Books = model.SubscriptionList(LoggedInUser.UserId)
 	}
-
-	if user.UserType == "admin" {
-		http.Redirect(res, req, "/admin", 301)
-		return
-	}
+	data.User1 = LoggedInUser
+	data.Message = "Welcome " + LoggedInUser.Name + "!!"
+	view.UserHome(res, req, data)
 }
 
 func SignUp(res http.ResponseWriter, req *http.Request) {
@@ -142,20 +143,20 @@ func PublishedBook(res http.ResponseWriter, req *http.Request) {
 
 func MyPublishedBook(res http.ResponseWriter, req *http.Request) {
 	var BL model.BookList
-	log.Println("Method:MyPublishedBook -> Publisher id = ", Currentloggedin)
-	//Take publisherid(Currentloggedin) from session
+	log.Println("Method:MyPublishedBook -> Publisher id = ", LoggedInUser.UserId)
+	//Take publisherid(LoggedInUser.UserId) from session
 	//finding unpublished book id from 	database
-	BL.Blist = model.GetBookList(1, Currentloggedin) // 1 - publishedbook, 0 - No specific user
+	BL.Blist = model.GetBookList(1, LoggedInUser.UserId) // 1 - publishedbook, 0 - No specific user
 	t, _ := template.ParseFiles("HTMLS/my-published-book.html")
 	t.Execute(res, BL)
 }
 
 func MyUnpublishedBook(res http.ResponseWriter, req *http.Request) {
 	var BL model.BookList
-	log.Println("Method:MyUnpublishedBook -> Publisher id = ", Currentloggedin)
-	//Take publisherid(Currentloggedin) from session
+	log.Println("Method:MyUnpublishedBook -> Publisher id = ", LoggedInUser.UserId)
+	//Take publisherid(LoggedInUser.UserId) from session
 	//finding unpublished book id from 	database
-	BL.Blist = model.GetBookList(0, Currentloggedin) // 1 - publishedbook, 0 - No specific user
+	BL.Blist = model.GetBookList(0, LoggedInUser.UserId) // 1 - publishedbook, 0 - No specific user
 	t, _ := template.ParseFiles("HTMLS/my-unpublished-book.html")
 	t.Execute(res, BL)
 }
@@ -173,7 +174,7 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 		book_id = strconv.Itoa(bid)
 
 		//finding book publisher id
-		publisher_id := Currentloggedin //it is temporary finally session will generat publisher_id
+		publisher_id := LoggedInUser.UserId //it is temporary finally session will generat publisher_id
 
 		//finding book title,description and isbn no
 		title := req.FormValue("title")
@@ -340,4 +341,26 @@ func ViewBook(res http.ResponseWriter, req *http.Request) {
 	fmt.Println("Single book view ViewBook.go")
 	t, _ := template.ParseFiles("HTMLS/view-book.html")
 	t.Execute(res, b)
+}
+
+func SubscribeBook(res http.ResponseWriter, req *http.Request) {
+	var book_id = req.URL.Query().Get("book")
+
+	var user_id = LoggedInUser.UserId
+	log.Println("Method: SubscribeBook,  Entered with book id : ", book_id, " and  user id: ", user_id)
+	var bid int
+	bid, _ = strconv.Atoi(book_id)
+	model.SubScripeBook(bid, user_id)
+	http.Redirect(res, req, "/view-book?book="+book_id, 301)
+
+}
+
+func UnsubscribeBook(res http.ResponseWriter, req *http.Request) {
+	var book_id = req.URL.Query().Get("book")
+	var user_id = LoggedInUser.UserId
+	log.Println("Method: UnubscribeBook,  Entered with book id : ", book_id, " and  user id: ", user_id)
+	var bid int
+	bid, _ = strconv.Atoi(book_id)
+	model.UnsubscribeBook(bid, user_id)
+	http.Redirect(res, req, "/view-book?book="+book_id, 301)
 }

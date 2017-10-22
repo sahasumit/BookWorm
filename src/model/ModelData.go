@@ -56,3 +56,20 @@ type BookList struct {
 	Blist []BookP
 	//Pub   string //publisher name
 }
+
+type UData struct {
+	Books   []BookP
+	Users   []User
+	Book1   BookP
+	User1   User
+	Message string
+}
+
+type RatingReview struct {
+	BookId, UserId, Rating int
+	ProviderName, Review   string
+}
+type Notification struct {
+	BookId            int
+	AdminNotification string
+}

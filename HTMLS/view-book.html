@@ -25,6 +25,10 @@
   <form action = "/subscribe-book?book={{.BookId}}" method = POST>
       <input type = submit  value="Subscribe Now">
   </form>
+  
+  <form action = "/unsubscribe-book?book={{.BookId}}" method = POST>
+      <input type = submit  value="Unsubscribe Now">
+  </form>
 
   <form action = "/unpublish-book?book={{.BookId}}" method = POST>
       <input type = submit  value="Unpublish Now">

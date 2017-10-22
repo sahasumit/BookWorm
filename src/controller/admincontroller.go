@@ -55,6 +55,7 @@ func UnpublishBook(res http.ResponseWriter, req *http.Request) {
 	log.Println("Book to be unpublished is = " + book_id)
 	bid, _ := strconv.Atoi(book_id)
 	model.PublishBook(bid, 0)
+	model.UnSubForAll(bid)
 	http.Redirect(res, req, "/publishedbook", 301)
 }
 
@@ -68,6 +69,7 @@ func UserList(res http.ResponseWriter, req *http.Request) {
 	var UL UserList
 	UL.Ulist = model.GetUserList()
 	t, _ := template.ParseFiles("HTMLS/admin/userlist.html")
+
 	t.Execute(res, UL)
 
 }

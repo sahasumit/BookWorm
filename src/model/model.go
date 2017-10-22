@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"log"
 	"model/dbcon"
 	"strconv"
@@ -135,4 +136,77 @@ isPub = 2 >> reject
 */
 func PublishBook(bookId int, isPub int) {
 	dbcon.Db.Exec("UPDATE Book SET is_published=? WHERE book_id=?", isPub, bookId)
+}
+
+func SubScripeBook(bookid int, userid int) {
+
+	var cnt int
+	dbcon.Db.QueryRow("SELECT COUNT(*) FROM subscription WHERE book_id=? AND user_id=?", bookid, userid).Scan(&cnt)
+	if cnt != 0 {
+		log.Println("Method : SubScripeBook, Already exist connection between book_id : ", bookid, " and user_id : ", userid)
+
+		return
+	}
+	log.Println("Method : SubScripeBook, ", userid, " want to subscribe book, ", bookid)
+
+	dbcon.Db.QueryRow("SELECT COUNT(*) FROM subscription WHERE  user_id=?", userid).Scan(&cnt)
+	if cnt >= 3 {
+		fmt.Println("Already subscribed for 3 books")
+		return
+	}
+	dbcon.Db.Exec("INSERT INTO subscription (book_id, user_id) VALUES (?,?)", bookid, userid)
+
+}
+
+func UnsubscribeBook(bookid int, userid int) {
+	log.Println("Method : UnsubsCribe Book  user id : ", userid, " and book id: ", bookid)
+	dbcon.Db.Exec("DELETE FROM subscription WHERE book_id=? AND user_id =?", bookid, userid)
+
+}
+
+func UnSubForAll(bookId int) {
+
+	_, err := dbcon.Db.Exec("DELETE from subscription where book_id = ?", bookId)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func SubscriptionList(userid int) []BookP {
+
+	log.Println("Method : Subscription List, User Id : ", userid)
+	rows, err := dbcon.Db.Query("SELECT book_id FROM subscription WHERE  user_id=?", userid)
+
+	if err != nil {
+
+		log.Println(err)
+	}
+	var BL []BookP
+	for rows.Next() {
+		var bookid int
+		err := rows.Scan(&bookid)
+		if err != nil {
+
+			log.Println(err)
+		}
+		BL = append(BL, GetBook(bookid))
+	}
+	return BL
+}
+
+// admin make active and unactive to a user using userid
+// active->0 admin will block a user
+// active->1 admin will unblock a user
+func SetActiveUser(userid int, active int) {
+	log.Println("Method SetActiveUser; User id : ", userid, " active: ", active)
+	var sql = "UPDATE user_info SET is_active=" + strconv.Itoa(active) + " WHERE user_id=?"
+	dbcon.Db.Exec(sql, userid)
+}
+
+func SetRatingReview(RatingReviewData RatingReview) {
+	dbcon.Db.Exec("INSERT INTO rating_review(user_id,book_id,rating,review) VALUES(?,?,?,?)", RatingReviewData.UserId, RatingReviewData.BookId, RatingReviewData.Rating, RatingReviewData.Review)
+}
+func SendNotification(NotificationData Notification) {
+	dbcon.Db.Exec("INSERT INTO notification_table(book_id,notification) VALUES(?,?)", NotificationData.BookId, NotificationData.AdminNotification)
+
 }

@@ -1,2 +1,3 @@
-/uploads/CoverPhoto/*
-/uploads/Pdf/*
+/uploads/CoverPhoto/*.jpg
+/uploads/Pdf/*.pdf
+/bin/
