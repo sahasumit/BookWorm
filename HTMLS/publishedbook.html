@@ -1,0 +1,22 @@
+<html>
+  <head>
+    <title></title>
+    <meta content="">
+    <style></style>
+  </head>
+  <body>Published Book list</body>
+
+
+  <table>
+    {{if .Blist}} {{range .Blist}}
+      <tr>
+        <td> <a href="/view-book?book={{.BookId}}"> {{.Title}} </a> </td>
+        <td> {{.PubName}} </td>
+        <td> Rating: {{.AvrgRating}} </td>
+        <td> <img src="/uploads/CoverPhoto/{{.Cover}}" height="42" width="42" > </td>
+      </tr>
+    {{end}}
+    {{end}}
+  </table>
+
+</html>

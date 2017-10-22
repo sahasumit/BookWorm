@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <title></title>
+    <meta content="">
+    <style></style>
+  </head>
+  <body>
+
+  <h1>Admin review for this book</h1>
+
+  <table>
+      <tr>
+        <td> <img src="/uploads/CoverPhoto/{{.Cover}}" height="42" width="42" > </td>
+        <td> {{.Title}}  </td>
+        <td> {{.PubName}} </td>
+        <td> Description: {{.Description}} </td>
+
+      </tr>
+  </table>
+
+    <form action = "/read-and-approve?book={{.BookId}}" method = POST>
+        <input type = submit name = "Read" value = "Read" >
+    </form>
+    <form action = "/send-notification?book={{.BookId}}" method = POST>
+        <input type = submit  value = "Send Notification" >
+    </form>
+    <form action = "/approve-book?book={{.BookId}}" method = POST>
+        <input type = submit name = "Approve Now" value="Approve Now">
+    </form>
+    <br>
+    <form action = "/reject?book={{.BookId}}" method = POST>
+        <input type = submit name = "Reject" Value = Reject>
+    </form>
+
+
+
+  </body>
+</html>

@@ -1,0 +1,21 @@
+<html>
+  <head>
+    <title></title>
+    <meta content="">
+    <style></style>
+  </head>
+  <body>
+  Edit book according to Admin notification
+<br><br>
+  <form  enctype="multipart/form-data" action="/update-book?book={{.BookId}}" method="POST">
+     Update cover photo<br>
+     <input type="file" name="cover_photo"  /><br><br>
+     Update pdf file<br>
+     <input type="file" name="pdf"  /><br><br>
+     <br>
+     {{.Title}}: <input type = "text" name = "title" placeholder="New Book Title"><br><br>
+     {{.Description}}: <input type = "text" name = "description" placeholder="New Description"><br><br>
+    <input type="submit" value="submit" />
+  </form>
+</body>
+</html>

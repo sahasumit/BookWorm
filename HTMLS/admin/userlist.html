@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <title></title>
+    <meta content="">
+    <style></style>
+  </head>
+  <body>List of All user</body>
+
+  <table>
+    {{if .Ulist}} {{range .Ulist}}
+      <tr>
+        <td> Name: {{.Name}} </a> </td>
+        <td> Email: {{.Email}}
+        <td> Type: {{.UserType}} </td>
+        <td> User Status : {{.IsActive}} </td>
+        {{if eq .IsActive 0}}
+          <td> <a href="/user-control?userid={{.UserId}}&doblock={{.IsActive}}"> Unblock </a> </td>
+        {{else}}
+          <td> <a href="/user-control?userid={{.UserId}}&doblock={{.IsActive}}"> Block </a> </td>
+        {{end}}
+      </tr>
+    {{end}}
+    {{end}}
+  </table>
+</html>
