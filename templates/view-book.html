@@ -2,11 +2,11 @@
 {{template "header"}}
 {{template "nav-auth"}}
 
-
-<h1>Single book view</h1>
-
+<center>
+<h1> Book view</h1>
+</center>
   </body>
-
+<center>
   <table>
 
       <tr>
@@ -19,7 +19,7 @@
       </tr>
 
   </table>
-
+</center>
   <form action = "/subscribe-book?book={{.Book1.BookId}}" method = POST>
       <input type = submit  value="Subscribe Now">
   </form>

@@ -18,6 +18,12 @@ func Pr() {
 }
 
 func Home(res http.ResponseWriter, req *http.Request) {
+	userId, userType := getUser(req)
+	log.Println(userId, userType)
+	if userType != "" {
+		http.Redirect(res, req, "/user-home", 301)
+		return
+	}
 	var data model.UData
 	view.Home(res, req, data)
 }
@@ -25,6 +31,7 @@ func Home(res http.ResponseWriter, req *http.Request) {
 var LoggedInUser model.User //set from session
 
 func Login(res http.ResponseWriter, req *http.Request) {
+	clearSession(res)
 	log.Println("method login", req.URL.Path, "Method = ", req.Method)
 	var data model.UData
 	log.Println("Logedin user = " + data.User1.Name)
@@ -89,21 +96,9 @@ func Login(res http.ResponseWriter, req *http.Request) {
 }
 
 func Logout(res http.ResponseWriter, req *http.Request) {
-	log.Println("Logging out  URL: ", req.URL.Path, "  Method = ", req.Method)
 	clearSession(res)
-	userId, userType := getUser(req)
-	log.Println(userId, userType)
-	if userId == "" {
-		http.Redirect(res, req, "/login", 301)
-		return
-	}
-	uid, _ := strconv.Atoi(userId)
-	if uid == 0 {
-		http.Redirect(res, req, "/login", 301)
-		return
-	}
-	//clearSession(res)
-	http.Redirect(res, req, "/login", 302)
+	clearSession(res)
+	http.Redirect(res, req, "/", 302)
 }
 
 func UserHome(res http.ResponseWriter, req *http.Request) {
@@ -527,9 +522,22 @@ func ViewBook(res http.ResponseWriter, req *http.Request) {
 }
 
 func SubscribeBook(res http.ResponseWriter, req *http.Request) {
-	var book_id = req.URL.Query().Get("book")
 
-	var user_id = LoggedInUser.UserId
+	userId, userType := getUser(req)
+	log.Println(userId, userType)
+
+	if userType == "" {
+		http.Redirect(res, req, "/login", 301)
+		return
+	}
+	if userType == "admin" {
+		http.Redirect(res, req, "/user-home", 301)
+		return
+	}
+
+	//
+	var book_id = req.URL.Query().Get("book")
+	var user_id, _ = strconv.Atoi(userId)
 	log.Println("Method: SubscribeBook,  Entered with book id : ", book_id, " and  user id: ", user_id)
 	var bid int
 	bid, _ = strconv.Atoi(book_id)
@@ -539,8 +547,20 @@ func SubscribeBook(res http.ResponseWriter, req *http.Request) {
 }
 
 func UnsubscribeBook(res http.ResponseWriter, req *http.Request) {
+
+	userId, userType := getUser(req)
+	log.Println(userId, userType)
+
+	if userType == "" {
+		http.Redirect(res, req, "/login", 301)
+		return
+	}
+	if userType == "admin" {
+		http.Redirect(res, req, "/user-home", 301)
+		return
+	}
 	var book_id = req.URL.Query().Get("book")
-	var user_id = LoggedInUser.UserId
+	var user_id, _ = strconv.Atoi(userId)
 	log.Println("Method: UnubscribeBook,  Entered with book id : ", book_id, " and  user id: ", user_id)
 	var bid int
 	bid, _ = strconv.Atoi(book_id)
