@@ -96,7 +96,11 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request, data model.UData
 func AdminReviewBook(res http.ResponseWriter, req *http.Request, data model.UData) {
 	log.Println("Package : view , Method : Admin review book, BookId ")
 	t := templates.Lookup("adminreviewbook.html")
-	t.ExecuteTemplate(res, "adminreviewbook", nil)
+	t.ExecuteTemplate(res, "adminreviewbook", data)
+}
+func UpdateBook(res http.ResponseWriter, req *http.Request, data model.UData) {
+	t := templates.Lookup("update-book.html")
+	t.ExecuteTemplate(res, "update-book", data)
 }
 
 func SendNoti(res http.ResponseWriter, req *http.Request, data model.UData) {

@@ -20,6 +20,9 @@
     {{end}}
     <input type="submit" name="Sort" value="Sort Books">
   </form>
+  <form action="/publishedbook" method="POST">
+    <input type="text" name="Keyword" placeholder="Enter Search Keyword"> &nbsp <input type="submit" name="submit" value="Search">
+  </form>
   <br>
   <table class="table" border="5">
     {{if .Books}}

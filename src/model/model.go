@@ -146,6 +146,18 @@ func GetBookListOrderBy(bookType int, pubId int, orderBy string) []BookP {
 	return bookArray
 }
 
+func GetBookByKeyword(key string) []BookP {
+	sql := "SELECT book_id, publisher_id, Title, cover_photo, Average_rating, name from Book, user_info WHERE ( Book.is_published = 1 AND Book.publisher_id = user_info.user_id ) AND (Book.Title LIKE '%" + key + "%' OR user_info.name LIKE '%" + key + "%' OR Book.description Like '%" + key + "%')"
+	rows, _ := dbcon.Db.Query(sql)
+	var tbook BookP
+	var books []BookP
+	for rows.Next() {
+		rows.Scan(&tbook.BookId, &tbook.PubId, &tbook.Title, &tbook.Cover, &tbook.AvrgRating, &tbook.PubName)
+		books = append(books, tbook)
+	}
+	return books
+}
+
 func GetBook(bookId int) BookP {
 	var b BookP
 	sql := "select * from Book where book_id = " + strconv.Itoa(bookId)

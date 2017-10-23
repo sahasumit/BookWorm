@@ -216,10 +216,16 @@ func PublishedBook(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	sortBy := req.FormValue("Sortby")
-
+	keyword := req.FormValue("Keyword")
 	log.Println("Now books will be filtered by pub id = ", pid, p)
-	log.Println("Now Books will be sorted by " + sortBy)
-	data.Books = model.GetBookListOrderBy(1, p, sortBy) // 1 - publishedbook, 0 - No specific user
+	log.Println("Now Books will be sorted by " + sortBy + " Search Key = " + keyword)
+	if keyword == "" {
+		data.Books = model.GetBookListOrderBy(1, p, sortBy) // 1 - publishedbook, 0 - No specific user
+	} else {
+		//search database by keword
+		data.Books = model.GetBookByKeyword(keyword)
+		//log.Println(data.Books)
+	}
 	//fmt.Fprint(res, "hello")
 	log.Println(data.Books)
 	data.Message = sortBy
@@ -265,6 +271,7 @@ func MyUnPublishedBook(res http.ResponseWriter, req *http.Request) {
 		http.Redirect(res, req, "/login", 301)
 		return
 	}
+
 	log.Println("Package : controller, Method : MyUnPublishedBook ")
 	var data model.UData
 	//var BL model.BookList
@@ -282,7 +289,7 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 
 	log.Println(req.URL.Path)
 	userId, userType := getUser(req)
-	log.Println("Admin looking for unpublished book = ", userId, userType)
+	log.Println(" ", userId, userType)
 	if userType == "member" {
 		http.Redirect(res, req, "/user-home", 301)
 		return
@@ -408,15 +415,29 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 
 //publisher update info of his book waiting for admin approval
 func UpdateBook(res http.ResponseWriter, req *http.Request) {
+	//
+	log.Println(req.URL.Path)
+	userId, userType := getUser(req)
+	log.Println(userId, userType)
+	uid, _ := strconv.Atoi(userId)
 	var book_id = req.URL.Query().Get("book")
 	bid, _ := strconv.Atoi(book_id)
 	var TmpBook model.BookP
 	TmpBook = model.GetBook(bid)
-	t, _ := template.ParseFiles("HTMLS/update-book.html")
+
+	if TmpBook.PubId != uid {
+
+		http.Redirect(res, req, "/user-home", 301)
+		return
+	}
+	//access secured
+
+	var data model.UData
+	data.Book1 = TmpBook
 
 	if req.Method != http.MethodPost {
 		fmt.Println("Method:UpdateBook GET Method, redirect from : /my-unpublished-book")
-		t.Execute(res, TmpBook)
+		view.UpdateBook(res, req, data)
 		return
 	}
 
@@ -481,8 +502,8 @@ func UpdateBook(res http.ResponseWriter, req *http.Request) {
 		fmt.Println(" description update : ", description)
 		model.UpdateBookDescription(bid, description)
 	}
+	view.UpdateBook(res, req, data)
 
-	t.Execute(res, TmpBook)
 }
 
 func ViewBook(res http.ResponseWriter, req *http.Request) {
