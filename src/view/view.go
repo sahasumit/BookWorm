@@ -31,12 +31,12 @@ func Init() {
 	}
 }
 
-func Home(res http.ResponseWriter, req *http.Request, data interface{}) {
+func Home(res http.ResponseWriter, req *http.Request, data model.UData) {
 	t := templates.Lookup("home.html")
 	t.ExecuteTemplate(res, "home", data)
 }
 
-func SignUp(res http.ResponseWriter, req *http.Request, data interface{}) {
+func SignUp(res http.ResponseWriter, req *http.Request, data model.UData) {
 	log.Println("SignUp Method In View controller")
 	t := templates.Lookup("signup.html")
 	t.ExecuteTemplate(res, "signup", data)
@@ -78,15 +78,25 @@ func UnPublishedBook(res http.ResponseWriter, req *http.Request, data model.UDat
 }
 
 func MyPublishedBook(res http.ResponseWriter, req *http.Request, data model.UData) {
-
-	t := templates.Lookup("mypublishedbook.html")
-	t.ExecuteTemplate(res, "mypublishedbook", data)
+	log.Println("Controller :  view  ,   Method: MyPublishedBook  ")
+	t := templates.Lookup("my-published-book.html")
+	t.ExecuteTemplate(res, "my-published-book", data)
 
 }
+func MyUnPublishedBook(res http.ResponseWriter, req *http.Request, data model.UData) {
+	log.Println("Package : view, Method : MyUnPublishedBook ")
+	t := templates.Lookup("my-un-published-book.html")
+	t.ExecuteTemplate(res, "my-un-published-book", data)
+
+}
+func PublishNewBook(res http.ResponseWriter, req *http.Request, data model.UData) {
+	t := templates.Lookup("publish-new-book.html")
+	t.ExecuteTemplate(res, "publish-new-book", data)
+}
 func AdminReviewBook(res http.ResponseWriter, req *http.Request, data model.UData) {
-	log.Println("Package : view , Method : Admin review book, BookId ", data.Book1.BookId)
+	log.Println("Package : view , Method : Admin review book, BookId ")
 	t := templates.Lookup("adminreviewbook.html")
-	t.ExecuteTemplate(res, "adminreviewbook", data)
+	t.ExecuteTemplate(res, "adminreviewbook", nil)
 }
 
 func SendNoti(res http.ResponseWriter, req *http.Request, data model.UData) {

@@ -2,7 +2,25 @@
 {{template "header"}}
 {{template "nav-auth"}}
 <div class="container">
-  <center><h2>BOOK List</h2></center>
+  <center><h2>Book List</h2></center>
+  <form action = "/publishedbook" method = "POST">
+    Sort by
+    {{if eq "Title" .Message}}
+    <input type="radio" name="Sortby" value="Date"> Date added &nbsp
+      <input type="radio" name="Sortby" value="Title" checked > Book Title &nbsp
+      <input type="radio" name="Sortby" value="Rating"> Rating &nbsp
+    {{else if eq "Rating" .Message}}
+    <input type="radio" name="Sortby" value="Date"> Date added &nbsp
+      <input type="radio" name="Sortby" value="Title" > Book Title &nbsp
+      <input type="radio" name="Sortby" value="Rating" checked> Rating &nbsp
+    {{else}}
+    <input type="radio" name="Sortby" value="Date" checked> Date added &nbsp
+      <input type="radio" name="Sortby" value="Title" > Book Title &nbsp
+      <input type="radio" name="Sortby" value="Rating"> Rating &nbsp
+    {{end}}
+    <input type="submit" name="Sort" value="Sort Books">
+  </form>
+  <br>
   <table class="table" border="5">
     {{if .Books}}
     <thead>
@@ -18,8 +36,8 @@
       {{if .Books}} {{range .Books}}
       <tr>
         <td><img src="/uploads/CoverPhoto/{{.Cover}}" height="300" width="200" ></img></td>
-        <td>{{.Title}}</td>
-        <td> {{.PubName}}</td>
+        <td><a href="/view-book?book={{.BookId}}">{{.Title}}</a></td>
+        <td> Publisher: <a href="/publishedbook?pid={{.PubId}}"> {{.PubName}} </a> </td>
         <td>Rating: {{.AvrgRating}}</td>
       </tr>
       {{end}} {{else}}

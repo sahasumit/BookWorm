@@ -39,7 +39,7 @@ func Publisher(res http.ResponseWriter, req *http.Request) {
 //calling contact us
 
 //html page handler
-func HtmlHandler() {
+/*func HtmlHandler() {
 
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))    //file server for raw file serving inside html
 	http.Handle("/resource/", http.StripPrefix("/resource/", http.FileServer(http.Dir("resource")))) //file server for raw file serving inside html
@@ -72,8 +72,8 @@ func HtmlHandler() {
 	/*http.HandleFunc("/block-user", BlockUser)
 	http.HandleFunc("/send-notification", SendNotification)
 	http.HandleFunc("/submit-notification", SubmitNotification)
-	*/
-}
+
+}*/
 
 func HtmlHandlerMux() {
 
@@ -88,7 +88,7 @@ func HtmlHandlerMux() {
 	router.HandleFunc("/about", controller.About)
 	router.HandleFunc("/contact", controller.Contact)
 	router.HandleFunc("/user-home", controller.UserHome)
-	router.HandleFunc("/my-unpublished-book", controller.MyUnpublishedBook)
+	router.HandleFunc("/my-un-published-book", controller.MyUnPublishedBook)
 	router.HandleFunc("/publish-new-book", controller.PublishNewBook)
 	router.HandleFunc("/my-published-book", controller.MyPublishedBook)
 	router.HandleFunc("/user-list", controller.UserList)
@@ -118,7 +118,6 @@ func test() {
 	log.Println("Test method : ")
 	var data model.Notification
 	data.BookId = 6
-
 	data.AdminNotification = "Your book is a bad book"
 	model.SendNotification(data)
 	//	model.SetActiveUser(6, 0)

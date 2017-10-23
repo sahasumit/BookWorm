@@ -106,6 +106,46 @@ func GetBookList(bookType int, pubId int) []BookP {
 	return bookArray
 }
 
+func GetBookListOrderBy(bookType int, pubId int, orderBy string) []BookP {
+
+	sql := "select * from Book where is_published = " + strconv.Itoa(bookType)
+	if pubId != 0 {
+		sql += " AND publisher_id = " + strconv.Itoa(pubId)
+		log.Println("Publisher Id = ", pubId)
+	}
+
+	if orderBy == "Rating" {
+		sql += " ORDER BY Average_rating DESC, Title ASC"
+	} else if orderBy == "Title" {
+		sql += " ORDER BY Title ASC, Average_rating DESC"
+	}
+
+	var bookArray []BookP
+	rows, err := dbcon.Db.Query(sql)
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var TmpBook BookP
+		err := rows.Scan(&TmpBook.BookId, &TmpBook.PubId, &TmpBook.Title, &TmpBook.Description, &TmpBook.Cover, &TmpBook.Isbn, &TmpBook.Pdf, &TmpBook.IsPubed, &TmpBook.AvrgRating)
+		if err != nil {
+			log.Println(err)
+		}
+		//to get Publisher name from user_info Table using PubId from Book Table
+		sql = "Select name from user_info Where user_info.user_id=" + strconv.Itoa(TmpBook.PubId)
+		dbcon.Db.QueryRow(sql).Scan(&TmpBook.PubName)
+
+		bookArray = append(bookArray, TmpBook)
+		///log.Println("GetBookList in Model controller : ID ", TmpBook.BookId, " book name ", TmpBook.Title)
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Println(err)
+	}
+	return bookArray
+}
+
 func GetBook(bookId int) BookP {
 	var b BookP
 	sql := "select * from Book where book_id = " + strconv.Itoa(bookId)

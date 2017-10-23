@@ -17,58 +17,9 @@ func Pr() {
 	fmt.Println("Hello from Package")
 }
 
-/*
-func SetCookies1(res http.ResponseWriter, user model.User) {
-	ck1 := http.Cookie{
-		Name:     "diu",
-		Value:    strconv.Itoa(user.UserId),
-		HttpOnly: true,
-		Expires:  time.Now().Add(30 * 24 * time.Hour),
-	}
-	http.SetCookie(res, &ck1)
-}
-*/
-/*
-func ResetCookies1(res http.ResponseWriter, user model.User) {
-	ck1 := http.Cookie{
-		Name:     "diu",
-		Value:    strconv.Itoa(user.UserId),
-		HttpOnly: true,
-		Expires:  time.Now(),
-	}
-	http.SetCookie(res, &ck1)
-}
-*/
-/*
-func GetUserByCookies1(req *http.Request) model.User {
-	var user model.User
-	for _, cookie := range req.Cookies() {
-		log.Println(cookie.Name)
-	}
-
-	ck1, err := req.Cookie("diu")
-	if err != nil {
-		log.Println("45 - ", err)
-		return user
-	}
-	log.Println(ck1.Name, ck1.Value)
-	uid, err := strconv.Atoi(ck1.Value)
-	if err != nil {
-		log.Println("Atoi Error from GetUserByCookies func ", err)
-		return user
-	}
-	log.Println("uid as int = ", uid)
-	if uid == 0 {
-		return user
-	}
-	user = model.GetUserById(uid)
-	return user
-}
-
-*/
-
 func Home(res http.ResponseWriter, req *http.Request) {
-	view.Home(res, req, nil)
+	var data model.UData
+	view.Home(res, req, data)
 }
 
 var LoggedInUser model.User //set from session
@@ -180,6 +131,14 @@ func UserHome(res http.ResponseWriter, req *http.Request) {
 }
 
 func SignUp(res http.ResponseWriter, req *http.Request) {
+
+	userId, userType := getUser(req)
+	log.Println(userId, userType)
+	if userType != "" {
+		http.Redirect(res, req, "/user-home", 301)
+		return
+	}
+
 	var data model.UData
 	log.Println("Entered Method : SignUp")
 	//before clicking submit option
@@ -245,14 +204,44 @@ func PublishedBook(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	var data model.UData
-	//finding unpublished book id from 	database
-	data.Books = model.GetBookList(1, 0) // 1 - publishedbook, 0 - No specific user
+	pid := req.URL.Query().Get("pid")
+	p, _ := strconv.Atoi(pid)
+
+	if req.Method == http.MethodGet {
+		//finding unpublished book id from 	database
+		data.Books = model.GetBookList(1, p) // 1 - publishedbook, 0 - No specific user
+		//fmt.Fprint(res, "hello")
+		//log.Println(data.Books)
+		view.PublishedBook(res, req, data)
+		return
+	}
+	sortBy := req.FormValue("Sortby")
+
+	log.Println("Now books will be filtered by pub id = ", pid, p)
+	log.Println("Now Books will be sorted by " + sortBy)
+	data.Books = model.GetBookListOrderBy(1, p, sortBy) // 1 - publishedbook, 0 - No specific user
 	//fmt.Fprint(res, "hello")
 	log.Println(data.Books)
+	data.Message = sortBy
 	view.PublishedBook(res, req, data)
+	return
 }
 
 func MyPublishedBook(res http.ResponseWriter, req *http.Request) {
+
+	log.Println(req.URL.Path)
+	userId, userType := getUser(req)
+	log.Println("Admin looking for unpublished book = ", userId, userType)
+	if userType == "member" {
+		http.Redirect(res, req, "/user-home", 301)
+		return
+	}
+	if userType == "" {
+		http.Redirect(res, req, "/login", 301)
+		return
+	}
+	//
+	//
 	var data model.UData
 	var BL model.BookList
 	log.Println("Method:MyPublishedBook -> Publisher id = ", LoggedInUser.UserId)
@@ -263,20 +252,48 @@ func MyPublishedBook(res http.ResponseWriter, req *http.Request) {
 	view.MyPublishedBook(res, req, data)
 }
 
-func MyUnpublishedBook(res http.ResponseWriter, req *http.Request) {
-	var BL model.BookList
+func MyUnPublishedBook(res http.ResponseWriter, req *http.Request) {
+
+	log.Println(req.URL.Path)
+	userId, userType := getUser(req)
+	log.Println("Admin looking for unpublished book = ", userId, userType)
+	if userType == "member" {
+		http.Redirect(res, req, "/user-home", 301)
+		return
+	}
+	if userType == "" {
+		http.Redirect(res, req, "/login", 301)
+		return
+	}
+	log.Println("Package : controller, Method : MyUnPublishedBook ")
+	var data model.UData
+	//var BL model.BookList
 	log.Println("Method:MyUnpublishedBook -> Publisher id = ", LoggedInUser.UserId)
 	//Take publisherid(LoggedInUser.UserId) from session
 	//finding unpublished book id from 	database
-	BL.Blist = model.GetBookList(0, LoggedInUser.UserId) // 1 - publishedbook, 0 - No specific user
-	t, _ := template.ParseFiles("HTMLS/my-unpublished-book.html")
-	t.Execute(res, BL)
+	data.Books = model.GetBookList(0, LoggedInUser.UserId) // 1 - publishedbook, 0 - No specific user
+	//t, _ := template.ParseFiles("HTMLS/my-unpublished-book.html")
+	//t.Execute(res, BL)
+	view.MyUnPublishedBook(res, req, data)
 }
 
 //publishing a new Book
 func PublishNewBook(res http.ResponseWriter, req *http.Request) {
+
+	log.Println(req.URL.Path)
+	userId, userType := getUser(req)
+	log.Println("Admin looking for unpublished book = ", userId, userType)
+	if userType == "member" {
+		http.Redirect(res, req, "/user-home", 301)
+		return
+	}
+	if userType == "" {
+		http.Redirect(res, req, "/login", 301)
+		return
+	}
 	fmt.Println("Method:PublisNewBook", req.Method)
 
+	var data model.UData
 	if req.Method == "POST" {
 
 		//finding unique book id
@@ -292,7 +309,21 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 		title := req.FormValue("title")
 		description := req.FormValue("description")
 		isbn := req.FormValue("isbn")
-
+		if title == "" {
+			data.Message = "Title can not be null"
+			view.PublishNewBook(res, req, data)
+			return
+		}
+		if description == "" {
+			data.Message = "Description can not be null"
+			view.PublishNewBook(res, req, data)
+			return
+		}
+		if isbn == "" {
+			data.Message = "Isbn can not be null"
+			view.PublishNewBook(res, req, data)
+			return
+		}
 		//finding book cover_photo and pdf version of book
 		file, handler, err := req.FormFile("cover_photo")
 		file2, handler2, err2 := req.FormFile("pdf")
@@ -300,12 +331,17 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 		//error checking
 		if err != nil {
 			fmt.Println(err)
-			http.Redirect(res, req, "/publish-new-book", 301)
+			//	http.Redirect(res, req, "/publish-new-book", 301)
+			data.Message = "Problem Uploading Cover photo of book- Empty Cover"
+			view.PublishNewBook(res, req, data)
+
 			return
 		}
 		if err2 != nil {
 			fmt.Println(err2)
-			http.Redirect(res, req, "/publish-new-book", 301)
+			//			http.Redirect(res, req, "/publish-new-book", 301)
+			data.Message = "Problem Uploading Pdf file of book- Empty Pdf"
+			view.PublishNewBook(res, req, data)
 			return
 		}
 
@@ -324,12 +360,16 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 		f2, err2 := os.OpenFile("."+string(os.PathSeparator)+"uploads"+string(os.PathSeparator)+"Pdf"+string(os.PathSeparator)+handler2.Filename, os.O_WRONLY|os.O_CREATE, 0666)
 		if err != nil {
 			fmt.Println(err)
-			http.Redirect(res, req, "/publish-new-book", 301)
+			//			http.Redirect(res, req, "/publish-new-book", 301)
+			data.Message = "Problem Uploading  Cover photo of book"
+			view.PublishNewBook(res, req, data)
 			return
 		}
 		if err2 != nil {
 			fmt.Println(err2)
-			http.Redirect(res, req, "/publish-new-book", 301)
+			//	http.Redirect(res, req, "/publish-new-book", 301)
+			data.Message = "Problem Uploading Pdf file of book"
+			view.PublishNewBook(res, req, data)
 			return
 		}
 		defer f.Close()
@@ -345,7 +385,9 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 		tmpBook := model.GetBookByIsbn(isbn)
 		if tmpBook.Isbn == isbn {
 			fmt.Println("Isbn already used")
-			http.Redirect(res, req, "/publish-new-book", 301)
+			//http.Redirect(res, req, "/publish-new-book", 301)
+			data.Message = "Isbn already used"
+			view.PublishNewBook(res, req, data)
 			return
 		}
 
@@ -355,10 +397,12 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 		book.Set(bid, publisher_id, title, description, handler.Filename, isbn, handler2.Filename, 0, 0)
 		model.SetBook(book)
 		fmt.Println("New Book Store successfully")
-		http.Redirect(res, req, "/publish-new-book", 301)
+		//	http.Redirect(res, req, "/publish-new-book", 301)
+		data.Message = "New Book Stored successfully"
+		view.PublishNewBook(res, req, data)
 	} else {
-		t, _ := template.ParseFiles("HTMLS/publish-new-book.html")
-		t.Execute(res, nil)
+		//data.Message = ""
+		view.PublishNewBook(res, req, data)
 	}
 }
 
