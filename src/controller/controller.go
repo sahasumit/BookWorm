@@ -508,17 +508,22 @@ func UpdateBook(res http.ResponseWriter, req *http.Request) {
 }
 
 func ViewBook(res http.ResponseWriter, req *http.Request) {
-
+	userId, userType := getUser(req)
+	log.Println(userId, userType)
+	if userType == "" {
+		http.Redirect(res, req, "/login", 301)
+		return
+	}
 	var book_id = req.URL.Query().Get("book")
 	fmt.Println("Requested book ID : ", book_id)
 	bid, _ := strconv.Atoi(book_id)
-	var b model.BookP
-
+	var data model.UData
 	//db.QueryRow("select pdf,Title,cover_photo,description,Isbn,Average_rating name from Book,user_info where  user_info.user_id=Book.publisher_id and is_published=1 and Book.book_id=?", book_id).Scan(&pdf, &bname, &cover_photo, &description, &isbn, &average_rating, &pname)
-	b = model.GetBook(bid)
+	data.Book1 = model.GetBook(bid)
 	fmt.Println("Single book view ViewBook.go")
-	t, _ := template.ParseFiles("HTMLS/view-book.html")
-	t.Execute(res, b)
+	//	t, _ := template.ParseFiles("HTMLS/view-book.html")
+	//t.Execute(res, b)
+	view.ViewBook(res, req, data)
 }
 
 func SubscribeBook(res http.ResponseWriter, req *http.Request) {

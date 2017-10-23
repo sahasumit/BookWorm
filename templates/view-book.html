@@ -1,0 +1,44 @@
+{{define "view-book"}}
+{{template "header"}}
+{{template "nav-auth"}}
+
+
+<h1>Single book view</h1>
+
+  </body>
+
+  <table>
+
+      <tr>
+        <td>COVER: <img src="/uploads/CoverPhoto/{{.Book1.Cover}}" height="42" width="42" > </td>
+        <td>Title: {{.Book1.Title}}  </td>
+        <td>Publisher: {{.Book1.PubName}} </td>
+        <td> Description: {{.Book1.Description}} </td>
+        <td> ISBN: {{.Book1.Isbn}} </td>
+        <td> Rating: {{.Book1.AvrgRating}} </td>
+      </tr>
+
+  </table>
+
+  <form action = "/subscribe-book?book={{.Book1.BookId}}" method = POST>
+      <input type = submit  value="Subscribe Now">
+  </form>
+
+  <form action = "/unsubscribe-book?book={{.Book1.BookId}}" method = POST>
+      <input type = submit  value="Unsubscribe Now">
+  </form>
+
+  <form action = "/unpublish-book?book={{.Book1.BookId}}" method = POST>
+      <input type = submit  value="Unpublish Now">
+  </form>
+
+
+  <form enctype="multipart/form-data" action="/view-book" method=POST>
+
+  Rating: <input type="text" name="rating" value="submit rating">
+  Review: <input type="text" name="review" value="submit review">
+
+  <input type = submit  value="Post Review">
+  </from>
+  {{template "footer"}}
+  {{end}}

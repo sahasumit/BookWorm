@@ -107,3 +107,15 @@ func SendNoti(res http.ResponseWriter, req *http.Request, data model.UData) {
 	t := templates.Lookup("adminreviewbook.html")
 	t.ExecuteTemplate(res, "send-noti", data)
 }
+func UserList(res http.ResponseWriter, req *http.Request, data model.UData) {
+	log.Println("Package : View ,Method : UserList  Admin  Entered to view user list")
+	t := templates.Lookup("user-list.html")
+	t.ExecuteTemplate(res, "user-list", data)
+
+}
+func ViewBook(res http.ResponseWriter, req *http.Request, data model.UData) {
+	///	log.Println("Package : View ,Method : Viewbook")
+	t := templates.Lookup("view-book.html")
+	t.ExecuteTemplate(res, "view-book", data)
+
+}

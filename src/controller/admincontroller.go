@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"html/template"
+	//"html/template"
 	"log"
 	"model"
 	"net/http"
@@ -124,22 +124,45 @@ func PostNotification(res http.ResponseWriter, req *http.Request) {
 }
 
 func UserList(res http.ResponseWriter, req *http.Request) {
+
 	userId, userType := getUser(req)
 	log.Println(userId, userType)
 	if userType != "admin" {
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
+	log.Println("Package : Controller ,Method : UserList  Admin ", userId, " Entered to view user list")
+	var data model.UData
+	//var UL UserList
 
-	type UserList struct {
-		Ulist   []model.User
-		Message string
+	data.Users = model.GetUserList()
+	view.UserList(res, req, data)
+	//t, _ := template.ParseFiles("HTMLS/admin/userlist.html")
+	//t.Execute(res, UL)
+
+}
+
+func UserControl(res http.ResponseWriter, req *http.Request) {
+
+	userId, userType := getUser(req)
+	log.Println(userId, userType)
+	if userType != "admin" {
+		http.Redirect(res, req, "/user-home", 301)
+		return
+	}
+	userid := req.URL.Query().Get("userid")
+	isBlock := req.URL.Query().Get("doblock")
+	var uid, is int
+	uid, _ = strconv.Atoi(userid)
+	is, _ = strconv.Atoi(isBlock)
+	var isb int
+	if is == 0 {
+		isb = 1
+	} else {
+
+		isb = 0
 	}
 
-	var UL UserList
-	UL.Ulist = model.GetUserList()
-	t, _ := template.ParseFiles("HTMLS/admin/userlist.html")
-
-	t.Execute(res, UL)
-
+	model.SetActiveUser(uid, isb)
+	http.Redirect(res, req, "/user-list", 301)
 }
