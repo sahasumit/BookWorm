@@ -1,0 +1,32 @@
+{{define "book-list"}}
+{{template "header"}}
+{{template "nav-auth"}}
+<div class="container">
+  <center><h2>BOOK List</h2></center>
+  <table class="table" border="5">
+    {{if .Books}}
+    <thead>
+      <tr>
+        <th>Cover</th>
+        <th>Title</th>
+        <th>Publisher name</th>
+        <th>Rating</th>
+      </tr>
+    </thead>
+    {{end}}
+    <tbody>
+      {{if .Books}} {{range .Books}}
+      <tr>
+        <td><img src="/uploads/CoverPhoto/{{.Cover}}" height="300" width="200" ></img></td>
+        <td>{{.Title}}</td>
+        <td> {{.PubName}}</td>
+        <td>Rating: {{.AvrgRating}}</td>
+      </tr>
+      {{end}} {{else}}
+      <p> No book published yet! </p>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{template "footer"}}
+{{end}}

@@ -15,6 +15,16 @@ func SetUser(user User) {
 	}
 
 }
+func GetUserById(uid int) User {
+	var user User
+	err := dbcon.Db.QueryRow("SELECT * FROM user_info WHERE user_id=?", uid).Scan(&user.UserId, &user.Email, &user.Password, &user.Name, &user.IsActive, &user.UserType)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(" UserInfo : ", user.Email, " ", user.Name)
+	return user
+}
+
 func GetUser(Email string) User {
 	var user User
 	err := dbcon.Db.QueryRow("SELECT * FROM user_info WHERE email=?", Email).Scan(&user.UserId, &user.Email, &user.Password, &user.Name, &user.IsActive, &user.UserType)
@@ -87,7 +97,7 @@ func GetBookList(bookType int, pubId int) []BookP {
 		dbcon.Db.QueryRow(sql).Scan(&TmpBook.PubName)
 
 		bookArray = append(bookArray, TmpBook)
-		log.Println("Books ID ", TmpBook.BookId, " book name ", TmpBook.Title)
+		log.Println("GetBookList in Model controller : ID ", TmpBook.BookId, " book name ", TmpBook.Title)
 	}
 	err = rows.Err()
 	if err != nil {

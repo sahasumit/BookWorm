@@ -6,51 +6,85 @@ import (
 	"model"
 	"net/http"
 	"strconv"
+	"view"
 )
 
 //Admin Home page
+/*
 func Admin(res http.ResponseWriter, req *http.Request) {
 	t, _ := template.ParseFiles("HTMLS/admin/admin.html")
 	t.Execute(res, nil)
 }
+*/
 
 //list of  All unpublished book for admin
-func UnpublishedBook(res http.ResponseWriter, req *http.Request) {
-	var BL model.BookList
-	//finding unpublished book id from 	database
-	BL.Blist = model.GetBookList(0, 0)
-	t, _ := template.ParseFiles("HTMLS/admin/unpublishedbook.html")
-	t.Execute(res, BL)
+func UnPublishedBook(res http.ResponseWriter, req *http.Request) {
+	log.Println(req.URL.Path)
+	userId, userType := getUser(req)
+	log.Println("Admin looking for unpublished book = ", userId, userType)
+	if userType != "admin" {
+		http.Redirect(res, req, "/user-home", 301)
+		return
+	}
+
+	log.Println("Method :UnpublishedBook in Controller, List of All unpublished book and only admin can View")
+	var data model.UData
+	data.Books = model.GetBookList(0, 0)
+	view.UnPublishedBook(res, req, data)
 }
 
 //admin reviewing single book for publishing
 func AdminReviewBook(res http.ResponseWriter, req *http.Request) {
 
+	userId, userType := getUser(req)
+	log.Println(userId, userType)
+	if userType != "admin" {
+		http.Redirect(res, req, "/user-home", 301)
+		return
+	}
+	var data model.UData
 	var book_id = req.URL.Query().Get("book")
+	log.Println("Package : controller , Method : Admin review book, BookId ", book_id)
 	bid, _ := strconv.Atoi(book_id)
 	book := model.GetBook(bid)
-	log.Println("Admin checking book id : ", book_id)
-
-	t, _ := template.ParseFiles("HTMLS/admin/adminreviewbook.html")
-	t.Execute(res, book)
+	data.Book1 = book
+	view.AdminReviewBook(res, req, data)
 }
 
 func ApproveBook(res http.ResponseWriter, req *http.Request) {
+	userId, userType := getUser(req)
+	log.Println(userId, userType)
+	if userType != "admin" {
+		http.Redirect(res, req, "/user-home", 301)
+		return
+	}
 	book_id := req.URL.Query().Get("book")
 	log.Println("Book to be approved is = " + book_id)
 	bid, _ := strconv.Atoi(book_id)
 	model.PublishBook(bid, 1)
-	http.Redirect(res, req, "/unpublishedbook", 301)
+	http.Redirect(res, req, "/un-published-book", 301)
 }
 
 func RejectBook(res http.ResponseWriter, req *http.Request) {
+	userId, userType := getUser(req)
+	log.Println(userId, userType)
+	if userType != "admin" {
+		http.Redirect(res, req, "/user-home", 301)
+		return
+	}
 	book_id := req.URL.Query().Get("book")
 	log.Println("Book to be rejected is = " + book_id)
 	bid, _ := strconv.Atoi(book_id)
 	model.PublishBook(bid, 2)
-	http.Redirect(res, req, "/unpublishedbook", 301)
+	http.Redirect(res, req, "/un-published-book", 301)
 }
 func UnpublishBook(res http.ResponseWriter, req *http.Request) {
+	userId, userType := getUser(req)
+	log.Println(userId, userType)
+	if userType != "admin" {
+		http.Redirect(res, req, "/user-home", 301)
+		return
+	}
 	book_id := req.URL.Query().Get("book")
 	log.Println("Book to be unpublished is = " + book_id)
 	bid, _ := strconv.Atoi(book_id)
@@ -59,7 +93,43 @@ func UnpublishBook(res http.ResponseWriter, req *http.Request) {
 	http.Redirect(res, req, "/publishedbook", 301)
 }
 
+func SendNotification(res http.ResponseWriter, req *http.Request) {
+	userId, userType := getUser(req)
+	log.Println(userId, userType)
+	if userType != "admin" {
+		http.Redirect(res, req, "/user-home", 301)
+		return
+	}
+	bookId := req.URL.Query().Get("book")
+	var data model.UData
+	bid, _ := strconv.Atoi(bookId)
+	data.Book1 = model.GetBook(bid)
+	view.SendNoti(res, req, data)
+}
+
+func PostNotification(res http.ResponseWriter, req *http.Request) {
+	userId, userType := getUser(req)
+	log.Println(userId, userType)
+	if userType != "admin" {
+		http.Redirect(res, req, "/user-home", 301)
+		return
+	}
+	bookId := req.URL.Query().Get("book")
+	bid, _ := strconv.Atoi(bookId)
+	var nd model.Notification
+	nd.BookId = bid
+	nd.AdminNotification = req.FormValue("noti")
+	model.SendNotification(nd)
+	http.Redirect(res, req, "/un-published-book", 301)
+}
+
 func UserList(res http.ResponseWriter, req *http.Request) {
+	userId, userType := getUser(req)
+	log.Println(userId, userType)
+	if userType != "admin" {
+		http.Redirect(res, req, "/user-home", 301)
+		return
+	}
 
 	type UserList struct {
 		Ulist   []model.User

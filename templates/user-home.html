@@ -1,9 +1,9 @@
 {{define "admin-home"}}
 {{template "header"}}
-{{template "nav"}}
+{{template "nav-auth"}}
 <h2>Admin Home</h2>
 {{if .Message}} <p>{{.Message}} </p> {{end}}
-<a href="/unpublishedbook">Unpublished book List</a><br><br>
+<a href="/un-published-book">Unpublished book List</a><br><br>
 <a href="/publishedbook">Book List</a><br><br>
 <a href="/my-published-book">my published list</a><br><br>
 <a href="/publish-new-book">publish a new book</a><br><br>
@@ -16,7 +16,7 @@
 
 {{define "publisher-home"}}
 {{template "header"}}
-{{template "nav"}}
+{{template "nav-auth"}}
 <h2>Publisher Home</h2>
 {{if .Message}} <p>{{.Message}} </p> {{end}}
 <a href="/publishedbook">Book List</a><br><br>
@@ -33,8 +33,10 @@
       <td> Rating: {{.AvrgRating}} </td>
       <td> <img src="/uploads/CoverPhoto/{{.Cover}}" height="42" width="42" > </td>
     </tr>
+  {{end}} {{else}}
+  <p> No subscription yet</p>
   {{end}}
-  {{end}}
+</table>
 
 {{template "footer"}}
 {{end}}
@@ -43,7 +45,7 @@
 
 {{define "member-home"}}
 {{template "header"}}
-{{template "nav"}}
+{{template "nav-auth"}}
 <h2>Reader Home</h2>
 {{if .Message}} <p>{{.Message}} </p> {{end}}
 
@@ -58,7 +60,8 @@
       <td> Rating: {{.AvrgRating}} </td>
       <td> <img src="/uploads/CoverPhoto/{{.Cover}}" height="42" width="42" > </td>
     </tr>
-  {{end}}
+  {{end}}{{else}}
+  <p> No subscription yet</p>
   {{end}}
 
 {{template "footer"}}
