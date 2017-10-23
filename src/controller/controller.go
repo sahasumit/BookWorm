@@ -89,7 +89,7 @@ func Login(res http.ResponseWriter, req *http.Request) {
 }
 
 func Logout(res http.ResponseWriter, req *http.Request) {
-	log.Println("UserHome func  URL: ", req.URL.Path, "Method = ", req.Method)
+	log.Println("Logging out  URL: ", req.URL.Path, "  Method = ", req.Method)
 	clearSession(res)
 	userId, userType := getUser(req)
 	log.Println(userId, userType)
@@ -102,8 +102,8 @@ func Logout(res http.ResponseWriter, req *http.Request) {
 		http.Redirect(res, req, "/login", 301)
 		return
 	}
-	clearSession(res)
-	http.Redirect(res, req, "/", 302)
+	//clearSession(res)
+	http.Redirect(res, req, "/login", 302)
 }
 
 func UserHome(res http.ResponseWriter, req *http.Request) {
@@ -236,6 +236,7 @@ func PublishedBook(res http.ResponseWriter, req *http.Request) {
 func MyPublishedBook(res http.ResponseWriter, req *http.Request) {
 
 	log.Println(req.URL.Path)
+	log.Println("MyPublishedBook() - method = ", req.Method)
 	userId, userType := getUser(req)
 	log.Println("Admin looking for unpublished book = ", userId, userType)
 	if userType == "member" {
