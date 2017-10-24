@@ -3,9 +3,10 @@ package controller
 import (
 	//"html/template"
 	"log"
-	"github.com/sahasumit/BookWorm/model"
 	"net/http"
 	"strconv"
+
+	"github.com/sahasumit/BookWorm/model"
 	"github.com/sahasumit/BookWorm/view"
 )
 
@@ -58,6 +59,8 @@ func ApproveBook(res http.ResponseWriter, req *http.Request) {
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
+	var uid int
+	uid, _ = strconv.Atoi(userId)
 
 	book_id := req.URL.Query().Get("book")
 
@@ -65,7 +68,8 @@ func ApproveBook(res http.ResponseWriter, req *http.Request) {
 	bid, _ := strconv.Atoi(book_id)
 	var data model.UData
 	data.Book1 = model.GetBook(bid)
-	if data.Book1.PubId == bid {
+	log.Println("Package : Controller,Method : Approve Book, Book ID ; ", book_id, " PUBLISHER iD : ", data.Book1.PubId, " Logged In Id: ", uid)
+	if data.Book1.PubId == uid {
 		http.Redirect(res, req, "/un-published-book", 301)
 		return
 	}
