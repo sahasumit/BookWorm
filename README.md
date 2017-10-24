@@ -13,9 +13,9 @@ This is a web app made with GO!
 * test in Linux based Operating System
 * install GO form (https://golang.org/)
 * go to your `GOPATH` or workspace 
-* clone this project `git clone https://github.com/user/repo.git'
+* clone this project `git clone https://github.com/sahasumit/BookWorm.git'
 * build packeges `dbcon`,`model`,`view`,`controller` using `go build` & `go install command`
-* create database Schema Named `BookWorm` in MysQL and create database from given https://github.com/sahasumit/BookWorm/tree/master/Database/Dump20171024
+* create database Schema Named `BookWorm` in MysQL and create database from given [sql dump](https://github.com/sahasumit/BookWorm/tree/master/Database/Dump20171024)
 
 * set your database `address`, `username` and `password` from `src/model/dbcon/dbcon.go`
 * run `go run main.go`
