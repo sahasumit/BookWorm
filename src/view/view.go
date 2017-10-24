@@ -47,6 +47,11 @@ func Login(res http.ResponseWriter, req *http.Request, data model.UData) {
 	t3.ExecuteTemplate(res, "login", data)
 }
 
+func SignOut(res http.ResponseWriter, req *http.Request, data interface{}) {
+	log.Println("Log out view! You have been logged out")
+	fmt.Fprint(res, "Logged out!")
+}
+
 func UserHome(res http.ResponseWriter, req *http.Request, data model.UData) {
 	t := templates.Lookup("user-home.html")
 	log.Println("Now I will serve user home = ", data.User1.Name)
@@ -113,9 +118,14 @@ func UserList(res http.ResponseWriter, req *http.Request, data model.UData) {
 	t.ExecuteTemplate(res, "user-list", data)
 
 }
-func ViewBook(res http.ResponseWriter, req *http.Request, data model.UData) {
-	///	log.Println("Package : View ,Method : Viewbook")
+func ViewBook(res http.ResponseWriter, req *http.Request, data model.ViewBookData) {
+	log.Println("Package : View ,Method : Viewbook", data)
 	t := templates.Lookup("view-book.html")
 	t.ExecuteTemplate(res, "view-book", data)
 
+}
+
+func ReadBook(res http.ResponseWriter, req *http.Request, data model.ViewBookData) {
+	t := templates.Lookup("read-book.html")
+	t.ExecuteTemplate(res, "read-book", data)
 }

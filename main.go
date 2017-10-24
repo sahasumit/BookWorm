@@ -131,6 +131,7 @@ func main() {
 	//DbConnection() //connecting with database
 	dbcon.DbConnection()
 	//test()
+
 	HtmlHandlerMux()
 	//creating server
 	log.Println("Server runing at port 8080")

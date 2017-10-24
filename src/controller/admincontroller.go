@@ -58,9 +58,20 @@ func ApproveBook(res http.ResponseWriter, req *http.Request) {
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
+
 	book_id := req.URL.Query().Get("book")
-	log.Println("Book to be approved is = " + book_id)
+
+	//	bid, _ = strconv.Atoi(book_id)
 	bid, _ := strconv.Atoi(book_id)
+	var data model.UData
+	data.Book1 = model.GetBook(bid)
+	if data.Book1.PubId == bid {
+		http.Redirect(res, req, "/un-published-book", 301)
+		return
+	}
+	//
+	log.Println("Book to be approved is = " + book_id)
+
 	model.PublishBook(bid, 1)
 	http.Redirect(res, req, "/un-published-book", 301)
 }

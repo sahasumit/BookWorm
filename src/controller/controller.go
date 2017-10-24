@@ -28,7 +28,7 @@ func Home(res http.ResponseWriter, req *http.Request) {
 	view.Home(res, req, data)
 }
 
-var LoggedInUser model.User //set from session
+//var LoggedInUser model.User //set from session
 
 func Login(res http.ResponseWriter, req *http.Request) {
 	clearSession(res)
@@ -85,20 +85,20 @@ func Login(res http.ResponseWriter, req *http.Request) {
 
 	//Set Session for newly loggedIn user here****
 	//**********************************************
-	LoggedInUser = user
+	//	LoggedInUser = user
 	uid := strconv.Itoa(user.UserId)
 	setSession(uid, user.UserType, res)
 	log.Println("Welcome success login id = " + uid + " Name = " + user.Name)
 	//redirect according to user type
-	data.Message = "Welcome " + user.Name + "! Login Succesful!!"
+	data.Message = user.Name
 	data.User1 = user
 	http.Redirect(res, req, "/user-home", 301) // redirect to user home(admin/pub/member)
 }
 
 func Logout(res http.ResponseWriter, req *http.Request) {
 	clearSession(res)
-	clearSession(res)
-	http.Redirect(res, req, "/", 302)
+	log.Println("Logging out!")
+	view.SignOut(res, req, nil)
 }
 
 func UserHome(res http.ResponseWriter, req *http.Request) {
@@ -246,10 +246,12 @@ func MyPublishedBook(res http.ResponseWriter, req *http.Request) {
 	//
 	var data model.UData
 	var BL model.BookList
-	log.Println("Method:MyPublishedBook -> Publisher id = ", LoggedInUser.UserId)
+	log.Println("Method:MyPublishedBook -> Publisher id = " + userId)
 	//Take publisherid(LoggedInUser.UserId) from session
 	//finding unpublished book id from 	database
-	BL.Blist = model.GetBookList(1, LoggedInUser.UserId) // 1 - publishedbook, 0 - No specific user
+	var uid int
+	uid, _ = strconv.Atoi(userId)
+	BL.Blist = model.GetBookList(1, uid) // 1 - publishedbook, 0 - No specific user
 	data.Books = BL.Blist
 	view.MyPublishedBook(res, req, data)
 }
@@ -271,10 +273,12 @@ func MyUnPublishedBook(res http.ResponseWriter, req *http.Request) {
 	log.Println("Package : controller, Method : MyUnPublishedBook ")
 	var data model.UData
 	//var BL model.BookList
-	log.Println("Method:MyUnpublishedBook -> Publisher id = ", LoggedInUser.UserId)
+	log.Println("Method:MyUnpublishedBook -> Publisher id = ", userId)
 	//Take publisherid(LoggedInUser.UserId) from session
 	//finding unpublished book id from 	database
-	data.Books = model.GetBookList(0, LoggedInUser.UserId) // 1 - publishedbook, 0 - No specific user
+	var uid int
+	uid, _ = strconv.Atoi(userId)
+	data.Books = model.GetBookList(0, uid) // 1 - publishedbook, 0 - No specific user
 	//t, _ := template.ParseFiles("HTMLS/my-unpublished-book.html")
 	//t.Execute(res, BL)
 	view.MyUnPublishedBook(res, req, data)
@@ -304,9 +308,10 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 		bid = model.GenerateID(2)
 		var book_id string
 		book_id = strconv.Itoa(bid)
-
+		var uid int
+		uid, _ = strconv.Atoi(userId)
 		//finding book publisher id
-		publisher_id := LoggedInUser.UserId //it is temporary finally session will generat publisher_id
+		publisher_id := uid //it is temporary finally session will generat publisher_id
 
 		//finding book title,description and isbn no
 		title := req.FormValue("title")
@@ -509,15 +514,121 @@ func ViewBook(res http.ResponseWriter, req *http.Request) {
 		http.Redirect(res, req, "/login", 301)
 		return
 	}
+	uid, _ := strconv.Atoi(userId)
 	var book_id = req.URL.Query().Get("book")
 	fmt.Println("Requested book ID : ", book_id)
 	bid, _ := strconv.Atoi(book_id)
-	var data model.UData
-	//db.QueryRow("select pdf,Title,cover_photo,description,Isbn,Average_rating name from Book,user_info where  user_info.user_id=Book.publisher_id and is_published=1 and Book.book_id=?", book_id).Scan(&pdf, &bname, &cover_photo, &description, &isbn, &average_rating, &pname)
+	var data model.ViewBookData
 	data.Book1 = model.GetBook(bid)
-	fmt.Println("Single book view ViewBook.go")
-	//	t, _ := template.ParseFiles("HTMLS/view-book.html")
-	//t.Execute(res, b)
+
+	//---------button control------------
+	if userType == "admin" {
+		data.Unpub = 1
+		data.Read = 1
+	} else if userType == "publisher" {
+		if (model.CheckSub(uid, bid) == 1) || (data.Book1.PubId == uid) {
+			data.Read = 1
+		}
+		if (data.Book1.PubId != uid) && (model.CheckSub(uid, bid) == 1) {
+			data.Unsub = 1
+		}
+		if (data.Book1.PubId != uid) && (model.CheckSub(uid, bid) == 0) {
+			data.Sub = 1
+		}
+	} else if userType == "member" {
+		if model.CheckSub(uid, bid) == 1 {
+			data.Read = 1
+			data.Unsub = 1
+		}
+		if model.CheckSub(uid, bid) == 0 {
+			data.Sub = 1
+		}
+	}
+	log.Println("Button permission form userId ", userId, " Read,Sub,Unsub,Unpub", data.Read, data.Sub, data.Unsub, data.Unpub)
+	//-------------button control done
+
+	//fmt.Println("Single book view ViewBook.go")
+	//GET method handle
+	if req.Method == http.MethodGet {
+		data.RatRev = model.GetRatingReview(bid)
+		log.Println("GET -> Rating Review = ", data.RatRev)
+		//log.Println(data.RatRev)
+		view.ViewBook(res, req, data)
+		return
+	}
+	//End of GET method
+
+	//--------POST method Handle
+	unp := req.FormValue("unpub")
+	read := req.FormValue("read")
+	sub := req.FormValue("sub")
+	unsub := req.FormValue("unsub")
+
+	if userType == "admin" {
+		if unp == "unpub" {
+			log.Println("unpublishing bookid = ", bid, data)
+			model.PublishBook(bid, 0)
+			data.Unpub = 0
+			http.Redirect(res, req, "/publishedbook", 301)
+			return
+		} else if read == "read" {
+			//redirect to reading page
+			http.Redirect(res, req, "/uploads/Pdf/"+book_id+".pdf", 301)
+			return
+		}
+	} else if userType == "publisher" {
+		if sub == "sub" {
+			model.SubScripeBook(bid, uid)
+			data.Sub = 0
+			data.Unsub = 1
+			data.Read = 1
+		} else if unsub == "unsub" {
+			model.UnsubscribeBook(bid, uid)
+			data.Unsub = 0
+			data.Sub = 1
+			data.Read = 0
+		} else if read == "read" {
+			//redirec to reading  page
+			http.Redirect(res, req, "/uploads/Pdf/"+book_id+".pdf", 301)
+			return
+		}
+	} else if userType == "member" {
+		if sub == "sub" {
+			model.SubScripeBook(bid, uid)
+			data.Sub = 0
+			data.Unsub = 1
+			data.Read = 1
+		} else if unsub == "unsub" {
+			model.UnsubscribeBook(bid, uid)
+			data.Unsub = 0
+			data.Sub = 1
+			data.Read = 0
+		}
+		if read == "read" {
+			//redirect to reading page
+			http.Redirect(res, req, "/uploads/Pdf/"+book_id+".pdf", 301)
+			return
+		}
+	}
+
+	reviewButton := req.FormValue("review-button")
+	if reviewButton == "review-button" {
+		rev := req.FormValue("review")
+		rat := req.FormValue("rating")
+		log.Println("Rating and reviw posted by UserId ", uid, " | rating = ", rat, " and review = ", rev)
+		var ratrevdata model.RatingReview
+		ratrevdata.BookId = bid
+		ratrevdata.UserId = uid
+		ratrevdata.UserName = model.GetUserById(uid).Name
+		rt, _ := strconv.Atoi(rat)
+		ratrevdata.Rating = float32(rt)
+		ratrevdata.Review = rev
+		model.SetRatingReview(ratrevdata)
+	}
+
+	data.RatRev = model.GetRatingReview(bid)
+	log.Println("POST -> Rating Review = ", data.RatRev)
+	log.Println("Button permission form userId ", userId, " Read,Sub,Unsub,Unpub", data.Read, data.Sub, data.Unsub, data.Unpub)
 	view.ViewBook(res, req, data)
 }
 

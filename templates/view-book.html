@@ -5,7 +5,7 @@
 <center>
 <h1> Book view</h1>
 </center>
-  </body>
+
 <center>
   <table>
 
@@ -20,25 +20,51 @@
 
   </table>
 </center>
-  <form action = "/subscribe-book?book={{.Book1.BookId}}" method = POST>
-      <input type = submit  value="Subscribe Now">
-  </form>
 
-  <form action = "/unsubscribe-book?book={{.Book1.BookId}}" method = POST>
-      <input type = submit  value="Unsubscribe Now">
+  {{if .Read}}
+  <form action = "/view-book?book={{.Book1.BookId}}" method = POST>
+      <input type="hidden" name="read" value="read">
+      <input type = submit  value="Read">
   </form>
-
-  <form action = "/unpublish-book?book={{.Book1.BookId}}" method = POST>
+  {{end}}
+  {{if .Unpub}}
+  <form action = "/view-book?book={{.Book1.BookId}}" method = POST>
+      <input type="hidden" name="unpub" value="unpub">
       <input type = submit  value="Unpublish Now">
   </form>
+  {{end}}
 
+  {{if .Sub}}
+  <form action = "/view-book?book={{.Book1.BookId}}" method = POST>
+      <input type="hidden" name="sub" value="sub">
+      <input type = submit  value="Subscribe Now">
+  </form>
+  {{end}}
 
-  <form enctype="multipart/form-data" action="/view-book" method=POST>
+  {{if .Unsub}}
+  <form action = "/view-book?book={{.Book1.BookId}}" method = POST>
+      <input type="hidden" name="unsub" value="unsub">
+      <input type = submit  value="Unsubscribe Now">
+  </form>
+  {{end}}
 
-  Rating: <input type="text" name="rating" value="submit rating">
-  Review: <input type="text" name="review" value="submit review">
+  <br><br>
 
-  <input type = submit  value="Post Review">
-  </from>
+  <form enctype="multipart/form-data" action="/view-book?book={{.Book1.BookId}}" method = POST>
+    Rating: <input type="text" name="rating" placeholder="rating 1 to 5">
+    Review: <input type="text" name="review" placeholder="Write review" >
+    <input type="hidden" name="review-button" value="review-button">
+    <input type = submit  value="Post Review">
+  </form>
+
+  <br>
+
+  <br>
+  <h4>Rating and Reviews:</h4>
+  {{if .RatRev}} {{range .RatRev}}
+    <p> Reader  <b> {{.UserName}}: </b> Rated this book {{.Rating}} out of 5 </p>
+    <p> {{.Review}} </p>
+  {{end}}{{end}}
+
   {{template "footer"}}
   {{end}}

@@ -66,10 +66,17 @@ type UData struct {
 }
 
 type RatingReview struct {
-	BookId, UserId, Rating int
-	ProviderName, Review   string
+	BookId, UserId   int
+	Rating           float32
+	UserName, Review string
 }
 type Notification struct {
 	BookId            int
 	AdminNotification string
+}
+
+type ViewBookData struct {
+	Read, Sub, Unsub, Unpub int //buttons active/inactive control
+	Book1                   BookP
+	RatRev                  []RatingReview
 }

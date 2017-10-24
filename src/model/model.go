@@ -166,7 +166,11 @@ func GetBook(bookId int) BookP {
 	dbcon.Db.QueryRow(sql).Scan(&b.PubName)
 	return b
 }
-
+func SetRating(bookId int) {
+	var avgrating string
+	dbcon.Db.QueryRow("SELECT avg(rating) FROM rating_review where book_id=?", bookId).Scan(&avgrating)
+	dbcon.Db.Exec("UPDATE Book SET Average_rating=? WHERE book_id=?", avgrating, bookId)
+}
 func GetBookByIsbn(isbn string) BookP {
 	var b BookP
 	sql := "select * from Book where Isbn = " + isbn
@@ -220,6 +224,12 @@ func SubScripeBook(bookid int, userid int) {
 
 }
 
+func CheckSub(userid int, bookid int) int {
+	var cnt int
+	dbcon.Db.QueryRow("SELECT COUNT(*) FROM subscription WHERE book_id=? AND user_id=?", bookid, userid).Scan(&cnt)
+	return cnt
+}
+
 func UnsubscribeBook(bookid int, userid int) {
 	log.Println("Method : UnsubsCribe Book  user id : ", userid, " and book id: ", bookid)
 	dbcon.Db.Exec("DELETE FROM subscription WHERE book_id=? AND user_id =?", bookid, userid)
@@ -268,6 +278,18 @@ func SetActiveUser(userid int, active int) {
 func SetRatingReview(RatingReviewData RatingReview) {
 	dbcon.Db.Exec("INSERT INTO rating_review(user_id,book_id,rating,review) VALUES(?,?,?,?)", RatingReviewData.UserId, RatingReviewData.BookId, RatingReviewData.Rating, RatingReviewData.Review)
 }
+
+func GetRatingReview(bookId int) []RatingReview {
+	var rdata []RatingReview
+	var tmpRat RatingReview
+	rows, _ := dbcon.Db.Query("Select rating_review.user_id, book_id, rating, review, name from rating_review, user_info where book_id = ? AND rating_review.user_id = user_info.user_id", bookId)
+	for rows.Next() {
+		rows.Scan(&tmpRat.UserId, &tmpRat.BookId, &tmpRat.Rating, &tmpRat.Review, &tmpRat.UserName)
+		rdata = append(rdata, tmpRat)
+	}
+	return rdata
+}
+
 func SendNotification(NotificationData Notification) {
 	dbcon.Db.Exec("INSERT INTO notification_table(book_id,notification) VALUES(?,?)", NotificationData.BookId, NotificationData.AdminNotification)
 
