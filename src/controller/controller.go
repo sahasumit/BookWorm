@@ -90,17 +90,16 @@ func Login(res http.ResponseWriter, req *http.Request) {
 	setSession(uid, user.UserType, res)
 	log.Println("Welcome success login id = " + uid + " Name = " + user.Name)
 	//redirect according to user type
-	data.Message = user.Name
+	data.Message = "Welcome " + user.Name + "! Login Succesful!!"
 	data.User1 = user
 	http.Redirect(res, req, "/user-home", 301) // redirect to user home(admin/pub/member)
 }
 
 func Logout(res http.ResponseWriter, req *http.Request) {
 	clearSession(res)
-	log.Println("Logging out!")
-	view.SignOut(res, req, nil)
+	clearSession(res)
+	http.Redirect(res, req, "/", 302)
 }
-
 func UserHome(res http.ResponseWriter, req *http.Request) {
 	var data model.UData
 	log.Println(req.URL.Path, "Method = ", req.Method)
