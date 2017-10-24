@@ -3,6 +3,7 @@
 {{template "nav-auth"}}
 
   <center><h2>List of  unpblished book</h2>
+    <center><h2>Click On Book Title To View Details </h2>
   <table border="10" BORDERCOLORLIGHT=YELLOW BORDERCOLORDARK=BLUE>
 
     <tr>
@@ -11,7 +12,7 @@
       <th> <center><b>   Publisher Name   </b></center></th>
       <th> <center><b>   ISBN   </b></center></th>
     </tr>
-  
+
     {{if .Books}} {{range .Books}}
       <tr>
         <td> <img src="/uploads/CoverPhoto/{{.Cover}}" height="100" width="100" > </td>

@@ -5,40 +5,30 @@ a platform where readers can read books and publishers can publish their books
 
 
 
-This is a web app made with GO!
+This is a web app made with GO
 
 
-## Installation 
+## Installation
+* Install GO language on your Linux-based machine form [here](https://golang.org/) and set your GOPATH
+* From terminal enter `go get github.com/sahasumit/BookWorm`
+* Now enter `cd $GOPATH/src/github.com/sahasumit/BookWorm`
+* Edit the `config.json` file with your `host`, `port`, `database.host`, `database.port` `database.schema` `database.username`, `database.password`
+* Now run the `ALL THE .sql files from "SQL-DUMP" folder` in you MySQL Workbench to create the full database
+* Finally From terminal enter `go run main.go` and go to browser
+-----
 
-* test in Linux based Operating System
-* install GO form (https://golang.org/)
-* go to your `GOPATH` or workspace 
-* clone this project `git clone https://github.com/sahasumit/BookWorm.git'
-* build packeges `dbcon`,`model`,`view`,`controller` using `go build` & `go install command`
-* create database Schema Named `BookWorm` in MysQL and create database from given [sql dump](https://github.com/sahasumit/BookWorm/tree/master/Database/Dump20171024)
-
-* set your database `address`, `username` and `password` from `src/model/dbcon/dbcon.go`
-* run `go run main.go`
-* go to 'http://localhost:8080/' from your browser
-
- #### default admin login credentials are, 
- * Email: `sahasumit288@gmail.com`
+ ### Admin login credentials are already in use from given database, \\will be updated
+  #### Admin1
+ * Email: `sahasumit@gmail.com`
  * Password: `adminsumit`
- 
- ### Other Libraby used to make this
- 
- * `github.com/gorilla/securecookie` 
+ #### Admin2
+* Email: `admin2@gmail.com`
+* Password: `admin2`
+
+
+ ### Other Libraries used
+
+ * `github.com/gorilla/securecookie`
  * `github.com/gorilla/mux`
  * `github.com/go-sql-driver/mysql`
-
-
-
-
-
-
-
-
-
-
-
-
+ -------

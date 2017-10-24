@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/sahasumit/BookWorm/controller"
+	"github.com/sahasumit/BookWorm/model/configs"
 	"github.com/sahasumit/BookWorm/model/dbcon"
 	"github.com/sahasumit/BookWorm/view"
 
@@ -94,15 +95,21 @@ func HtmlHandlerMux() {
 var router = mux.NewRouter()
 
 func main() {
+
+	Config := configs.LoadConfiguration("config.json")
 	view.Init()
 	//DbConnection() //connecting with database
-	dbcon.DbConnection()
+	dbcon.DbConnection(Config)
 	//test()
 
 	HtmlHandlerMux()
 	//creating server
-	log.Println("Server runing at port 8080")
-	http.ListenAndServe(":8080", nil)
+
+	log.Println("Server runing! go to", Config.Server.Host+":"+Config.Server.Port)
+	err := http.ListenAndServe(Config.Server.Host+":"+Config.Server.Port, nil)
+	if err != nil {
+		log.Println(err)
+	}
 
 	log.Println("After Starting Server")
 }
