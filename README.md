@@ -11,7 +11,7 @@ This is a web app made with GO!
 ## Installation 
 
 * test in Linux based Operating System
-* install GO form [Here](www.golang.org)
+* install GO form [Here](https://golang.org/)
 * go to your `GOPATH` or workspace 
 * clone this project `git clone https://github.com/user/repo.git'
 * build packeges `dbcon`,`model`,`view`,`controller` using `go build` & `go install command`
