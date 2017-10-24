@@ -3,8 +3,9 @@ package model
 import (
 	"fmt"
 	"log"
-	"model/dbcon"
 	"strconv"
+
+	"github.com/sahasumit/BookWorm/model/dbcon"
 )
 
 func SetUser(user User) {
@@ -166,11 +167,7 @@ func GetBook(bookId int) BookP {
 	dbcon.Db.QueryRow(sql).Scan(&b.PubName)
 	return b
 }
-func SetRating(bookId int) {
-	var avgrating string
-	dbcon.Db.QueryRow("SELECT avg(rating) FROM rating_review where book_id=?", bookId).Scan(&avgrating)
-	dbcon.Db.Exec("UPDATE Book SET Average_rating=? WHERE book_id=?", avgrating, bookId)
-}
+
 func GetBookByIsbn(isbn string) BookP {
 	var b BookP
 	sql := "select * from Book where Isbn = " + isbn
@@ -204,24 +201,26 @@ func PublishBook(bookId int, isPub int) {
 	dbcon.Db.Exec("UPDATE Book SET is_published=? WHERE book_id=?", isPub, bookId)
 }
 
-func SubScripeBook(bookid int, userid int) {
+//subscription successfull ->1
+//subscription unsuccessfull ->0
+func SubScripeBook(bookid int, userid int) int {
 
 	var cnt int
 	dbcon.Db.QueryRow("SELECT COUNT(*) FROM subscription WHERE book_id=? AND user_id=?", bookid, userid).Scan(&cnt)
 	if cnt != 0 {
 		log.Println("Method : SubScripeBook, Already exist connection between book_id : ", bookid, " and user_id : ", userid)
 
-		return
+		return 0
 	}
 	log.Println("Method : SubScripeBook, ", userid, " want to subscribe book, ", bookid)
 
 	dbcon.Db.QueryRow("SELECT COUNT(*) FROM subscription WHERE  user_id=?", userid).Scan(&cnt)
 	if cnt >= 3 {
 		fmt.Println("Already subscribed for 3 books")
-		return
+		return 0
 	}
 	dbcon.Db.Exec("INSERT INTO subscription (book_id, user_id) VALUES (?,?)", bookid, userid)
-
+	return 1
 }
 
 func CheckSub(userid int, bookid int) int {
@@ -277,6 +276,12 @@ func SetActiveUser(userid int, active int) {
 
 func SetRatingReview(RatingReviewData RatingReview) {
 	dbcon.Db.Exec("INSERT INTO rating_review(user_id,book_id,rating,review) VALUES(?,?,?,?)", RatingReviewData.UserId, RatingReviewData.BookId, RatingReviewData.Rating, RatingReviewData.Review)
+	var bookId int
+	bookId = RatingReviewData.BookId
+	var avgrating string
+	dbcon.Db.QueryRow("SELECT avg(rating) FROM rating_review where book_id=?", bookId).Scan(&avgrating)
+	dbcon.Db.Exec("UPDATE Book SET Average_rating=? WHERE book_id=?", avgrating, bookId)
+
 }
 
 func GetRatingReview(bookId int) []RatingReview {

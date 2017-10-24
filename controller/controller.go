@@ -6,11 +6,12 @@ import (
 	"html/template"
 	"io"
 	"log"
-	"model"
 	"net/http"
 	"os"
 	"strconv"
-	"view"
+
+	"github.com/sahasumit/BookWorm/model"
+	"github.com/sahasumit/BookWorm/view"
 )
 
 func Pr() {
@@ -505,7 +506,16 @@ func UpdateBook(res http.ResponseWriter, req *http.Request) {
 	view.UpdateBook(res, req, data)
 
 }
-
+func ReadBook(res http.ResponseWriter, req *http.Request) {
+	userId, userType := getUser(req)
+	log.Println(userId, userType)
+	if userType != "admin" {
+		http.Redirect(res, req, "/login", 301)
+		return
+	}
+	var book_id = req.URL.Query().Get("book")
+	http.Redirect(res, req, "/uploads/Pdf/"+book_id+".pdf", 301)
+}
 func ViewBook(res http.ResponseWriter, req *http.Request) {
 	userId, userType := getUser(req)
 	log.Println(userId, userType)
@@ -577,10 +587,14 @@ func ViewBook(res http.ResponseWriter, req *http.Request) {
 		}
 	} else if userType == "publisher" {
 		if sub == "sub" {
-			model.SubScripeBook(bid, uid)
-			data.Sub = 0
-			data.Unsub = 1
-			data.Read = 1
+			var temp = model.SubScripeBook(bid, uid)
+			if temp == 1 {
+
+				data.Sub = 0
+				data.Unsub = 1
+				data.Read = 1
+			}
+
 		} else if unsub == "unsub" {
 			model.UnsubscribeBook(bid, uid)
 			data.Unsub = 0

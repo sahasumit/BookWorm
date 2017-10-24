@@ -1,42 +1,18 @@
 package main
 
 import (
-	"controller"
-	"html/template"
 	"log"
-	"model"
-	"model/dbcon"
 	"net/http"
-	"view"
+
+	"github.com/sahasumit/BookWorm/controller"
+	"github.com/sahasumit/BookWorm/model/dbcon"
+	"github.com/sahasumit/BookWorm/view"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
 
-//var db *sql.DB
-//var db *database.Db
-
 var err error
-var currentloggedin int //id of currently logged in user
-
-//Member Home page
-func Member(res http.ResponseWriter, req *http.Request) {
-
-	t, _ := template.ParseFiles("HTMLS/member/member.html")
-	t.Execute(res, nil)
-	//	UnsubscripeBook(2)
-
-}
-
-//publisher home page
-func Publisher(res http.ResponseWriter, req *http.Request) {
-
-	t, _ := template.ParseFiles("HTMLS/publisher/publisher.html")
-	t.Execute(res, nil)
-
-}
-
-//calling contact us
 
 //html page handler
 /*func HtmlHandler() {
@@ -106,22 +82,13 @@ func HtmlHandlerMux() {
 	router.HandleFunc("/send-notification", controller.SendNotification)
 	router.HandleFunc("/post-notification", controller.PostNotification)
 	router.HandleFunc("/user-control", controller.UserControl)
+	router.HandleFunc("/read-book", controller.ReadBook)
 
 	//undone yet in mvc fashion
 	/*http.HandleFunc("/view-user", ViewUser)//ar lagbe na view user
 	/*http.HandleFunc("/block-user", BlockUser)
 	http.HandleFunc("/submit-notification", SubmitNotification)
 	*/
-}
-
-//testing func
-func test() {
-	log.Println("Test method : ")
-	var data model.Notification
-	data.BookId = 6
-	data.AdminNotification = "Your book is a bad book"
-	model.SendNotification(data)
-	//	model.SetActiveUser(6, 0)
 }
 
 var router = mux.NewRouter()

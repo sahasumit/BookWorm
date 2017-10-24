@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"io/ioutil"
 	"log"
-	"model"
+	"github.com/sahasumit/BookWorm/model"
 	"net/http"
 	"strings"
 )

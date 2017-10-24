@@ -3,10 +3,10 @@ package controller
 import (
 	//"html/template"
 	"log"
-	"model"
+	"github.com/sahasumit/BookWorm/model"
 	"net/http"
 	"strconv"
-	"view"
+	"github.com/sahasumit/BookWorm/view"
 )
 
 //Admin Home page
