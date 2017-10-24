@@ -19,7 +19,7 @@ This is a web app made with GO!
 
 * set your database `address`, `username` and `password` from `src/model/dbcon/dbcon.go`
 * run `go run main.go`
-
+* go to 'http://localhost:8080/' from your browser
 
  #### default admin login credentials are, 
  * Email: `sahasumit288@gmail.com`
