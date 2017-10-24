@@ -299,3 +299,8 @@ func SendNotification(NotificationData Notification) {
 	dbcon.Db.Exec("INSERT INTO notification_table(book_id,notification) VALUES(?,?)", NotificationData.BookId, NotificationData.AdminNotification)
 
 }
+func GetNotification(BookId int) Notification {
+	var NotificationData Notification
+	dbcon.Db.QueryRow("SELECT * FROM notification_table WHERE book_id=?", BookId).Scan(&NotificationData.BookId, &NotificationData.AdminNotification)
+	return NotificationData
+}

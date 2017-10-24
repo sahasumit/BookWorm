@@ -2,7 +2,8 @@
 {{template "header"}}
 {{template "nav-auth"}}
 
-  Edit book according to Admin notification
+  Edit book according to Admin notification<br><br>
+  {{.Noti.AdminNotification}}<br><br>
 <br><br>
   <form  enctype="multipart/form-data" action="/update-book?book={{.Book1.BookId}}" method="POST">
      Update cover photo<br>

@@ -435,9 +435,10 @@ func UpdateBook(res http.ResponseWriter, req *http.Request) {
 
 	var data model.UData
 	data.Book1 = TmpBook
-
+	data.Noti = model.GetNotification(data.Book1.BookId)
 	if req.Method != http.MethodPost {
 		fmt.Println("Method:UpdateBook GET Method, redirect from : /my-unpublished-book")
+
 		view.UpdateBook(res, req, data)
 		return
 	}
@@ -503,9 +504,13 @@ func UpdateBook(res http.ResponseWriter, req *http.Request) {
 		fmt.Println(" description update : ", description)
 		model.UpdateBookDescription(bid, description)
 	}
+
+	log.Println("Package: Controller, Method: UpdateBook, Book ID : ", data.Noti.BookId, " Notification : ", data.Noti.AdminNotification)
+
 	view.UpdateBook(res, req, data)
 
 }
+
 func ReadBook(res http.ResponseWriter, req *http.Request) {
 	userId, userType := getUser(req)
 	log.Println(userId, userType)
@@ -516,6 +521,7 @@ func ReadBook(res http.ResponseWriter, req *http.Request) {
 	var book_id = req.URL.Query().Get("book")
 	http.Redirect(res, req, "/uploads/Pdf/"+book_id+".pdf", 301)
 }
+
 func ViewBook(res http.ResponseWriter, req *http.Request) {
 	userId, userType := getUser(req)
 	log.Println(userId, userType)

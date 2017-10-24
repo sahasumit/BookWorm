@@ -5,9 +5,10 @@ import (
 	"html/template"
 	"io/ioutil"
 	"log"
-	"github.com/sahasumit/BookWorm/model"
 	"net/http"
 	"strings"
+
+	"github.com/sahasumit/BookWorm/model"
 )
 
 var templates *template.Template
@@ -105,6 +106,7 @@ func AdminReviewBook(res http.ResponseWriter, req *http.Request, data model.UDat
 }
 func UpdateBook(res http.ResponseWriter, req *http.Request, data model.UData) {
 	t := templates.Lookup("update-book.html")
+	log.Println("Package: View, Method: UpdateBook, Book ID : ", data.Noti.BookId, " Notification : ", data.Noti.AdminNotification)
 	t.ExecuteTemplate(res, "update-book", data)
 }
 

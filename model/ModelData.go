@@ -62,6 +62,7 @@ type UData struct {
 	Users   []User
 	Book1   BookP
 	User1   User
+	Noti    Notification
 	Message string
 }
 
