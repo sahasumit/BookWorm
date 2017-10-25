@@ -28,7 +28,7 @@ func UnPublishedBook(res http.ResponseWriter, req *http.Request) {
 	log.Println("Admin looking for unpublished book = ", userId, userType)
 	if userType != "admin" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/user-home", 301)
+		http.Redirect(res, req, "/user-home", 302)
 		return
 	}
 
@@ -48,7 +48,7 @@ func AdminReviewBook(res http.ResponseWriter, req *http.Request) {
 	userType := session.Values["UserType"].(string)
 	if userType != "admin" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/user-home", 301)
+		http.Redirect(res, req, "/user-home", 302)
 		return
 	}
 	var data model.UData
@@ -69,7 +69,7 @@ func ApproveBook(res http.ResponseWriter, req *http.Request) {
 	log.Println(userId, userType)
 	if userType != "admin" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/user-home", 301)
+		http.Redirect(res, req, "/user-home", 302)
 		return
 	}
 	//
@@ -86,7 +86,7 @@ func ApproveBook(res http.ResponseWriter, req *http.Request) {
 	log.Println("Package : Controller,Method : Approve Book, Book ID ; ", book_id, " PUBLISHER iD : ", data.Book1.PubId, " Logged In Id: ", uid)
 	if data.Book1.PubId == uid {
 		session.Save(req, res)
-		http.Redirect(res, req, "/un-published-book", 301)
+		http.Redirect(res, req, "/un-published-book", 302)
 		return
 	}
 	//
@@ -94,7 +94,7 @@ func ApproveBook(res http.ResponseWriter, req *http.Request) {
 
 	model.PublishBook(bid, 1)
 	session.Save(req, res)
-	http.Redirect(res, req, "/un-published-book", 301)
+	http.Redirect(res, req, "/un-published-book", 302)
 }
 
 func RejectBook(res http.ResponseWriter, req *http.Request) {
@@ -104,7 +104,7 @@ func RejectBook(res http.ResponseWriter, req *http.Request) {
 	log.Println(userId, userType)
 	if userType != "admin" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/user-home", 301)
+		http.Redirect(res, req, "/user-home", 302)
 		return
 	}
 	book_id := req.URL.Query().Get("book")
@@ -112,7 +112,7 @@ func RejectBook(res http.ResponseWriter, req *http.Request) {
 	bid, _ := strconv.Atoi(book_id)
 	model.PublishBook(bid, 2)
 	session.Save(req, res)
-	http.Redirect(res, req, "/un-published-book", 301)
+	http.Redirect(res, req, "/un-published-book", 302)
 }
 func UnpublishBook(res http.ResponseWriter, req *http.Request) {
 	session, _ := store.Get(req, "cookie-name")
@@ -121,7 +121,7 @@ func UnpublishBook(res http.ResponseWriter, req *http.Request) {
 	log.Println(userId, userType)
 	if userType != "admin" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/user-home", 301)
+		http.Redirect(res, req, "/user-home", 302)
 		return
 	}
 	book_id := req.URL.Query().Get("book")
@@ -130,7 +130,7 @@ func UnpublishBook(res http.ResponseWriter, req *http.Request) {
 	model.PublishBook(bid, 0)
 	model.UnSubForAll(bid)
 	session.Save(req, res)
-	http.Redirect(res, req, "/publishedbook", 301)
+	http.Redirect(res, req, "/publishedbook", 302)
 }
 
 func SendNotification(res http.ResponseWriter, req *http.Request) {
@@ -140,7 +140,7 @@ func SendNotification(res http.ResponseWriter, req *http.Request) {
 	log.Println(userId, userType)
 	if userType != "admin" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/user-home", 301)
+		http.Redirect(res, req, "/user-home", 302)
 		return
 	}
 	bookId := req.URL.Query().Get("book")
@@ -158,7 +158,7 @@ func PostNotification(res http.ResponseWriter, req *http.Request) {
 	log.Println(userId, userType)
 	if userType != "admin" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/user-home", 301)
+		http.Redirect(res, req, "/user-home", 302)
 		return
 	}
 	bookId := req.URL.Query().Get("book")
@@ -168,7 +168,7 @@ func PostNotification(res http.ResponseWriter, req *http.Request) {
 	nd.AdminNotification = req.FormValue("noti")
 	model.SendNotification(nd)
 	session.Save(req, res)
-	http.Redirect(res, req, "/un-published-book", 301)
+	http.Redirect(res, req, "/un-published-book", 302)
 }
 
 func UserList(res http.ResponseWriter, req *http.Request) {
@@ -179,7 +179,7 @@ func UserList(res http.ResponseWriter, req *http.Request) {
 	log.Println(userId, userType)
 	if userType != "admin" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/user-home", 301)
+		http.Redirect(res, req, "/user-home", 302)
 		return
 	}
 	log.Println("Package : Controller ,Method : UserList  Admin ", userId, " Entered to view user list")
@@ -202,7 +202,7 @@ func UserControl(res http.ResponseWriter, req *http.Request) {
 	log.Println(userId, userType)
 	if userType != "admin" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/user-home", 301)
+		http.Redirect(res, req, "/user-home", 302)
 		return
 	}
 	userid := req.URL.Query().Get("userid")
@@ -220,5 +220,5 @@ func UserControl(res http.ResponseWriter, req *http.Request) {
 
 	model.SetActiveUser(uid, isb)
 	session.Save(req, res)
-	http.Redirect(res, req, "/user-list", 301)
+	http.Redirect(res, req, "/user-list", 302)
 }

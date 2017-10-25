@@ -90,5 +90,5 @@ func Login(res http.ResponseWriter, req *http.Request) {
 	data.Message = "Welcome " + user.Name + "! Login Succesful!!"
 	data.User1 = user
 	session.Save(req, res)
-	http.Redirect(res, req, "/user-home", 301) // redirect to user home(admin/pub/member)
+	http.Redirect(res, req, "/user-home", 302) // redirect to user home(admin/pub/member)
 }

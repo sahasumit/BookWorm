@@ -44,14 +44,14 @@ func UserHome(res http.ResponseWriter, req *http.Request) {
 	log.Println(userId, userType)
 	if userType == "" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/login", 301)
+		http.Redirect(res, req, "/login", 302)
 		return
 	}
 	uid := userId
 
 	if uid == 0 {
 		session.Save(req, res)
-		http.Redirect(res, req, "/login", 301)
+		http.Redirect(res, req, "/login", 302)
 		return
 	}
 
@@ -94,7 +94,7 @@ func SignUp(res http.ResponseWriter, req *http.Request) {
 		data.Message = "Password does not match"
 		session.Save(req, res)
 		view.SignUp(res, req, data)
-		//http.Redirect(res, req, "/signup", 301)
+		//http.Redirect(res, req, "/signup", 302)
 		return
 	}
 	//checking mail used or not
@@ -118,7 +118,7 @@ func SignUp(res http.ResponseWriter, req *http.Request) {
 	//storing new user in database user tab
 	println("Stored in database")
 	session.Save(req, res)
-	http.Redirect(res, req, "/login", 301)
+	http.Redirect(res, req, "/login", 302)
 }
 
 func Contact(res http.ResponseWriter, req *http.Request) {
@@ -138,7 +138,7 @@ func PublishedBook(res http.ResponseWriter, req *http.Request) {
 	log.Println(userId, userType)
 	if userType == "" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/login", 301)
+		http.Redirect(res, req, "/login", 302)
 		return
 	}
 	var data model.UData
@@ -184,12 +184,12 @@ func MyPublishedBook(res http.ResponseWriter, req *http.Request) {
 	log.Println("Admin looking for unpublished book = ", userId, userType)
 	if userType == "member" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/user-home", 301)
+		http.Redirect(res, req, "/user-home", 302)
 		return
 	}
 	if userType == "" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/login", 301)
+		http.Redirect(res, req, "/login", 302)
 		return
 	}
 	//
@@ -216,12 +216,12 @@ func MyUnPublishedBook(res http.ResponseWriter, req *http.Request) {
 	log.Println("Admin looking for unpublished book = ", userId, userType)
 	if userType == "member" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/user-home", 301)
+		http.Redirect(res, req, "/user-home", 302)
 		return
 	}
 	if userType == "" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/login", 301)
+		http.Redirect(res, req, "/login", 302)
 		return
 	}
 
@@ -251,12 +251,12 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 	log.Println(" ", userId, userType)
 	if userType == "member" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/user-home", 301)
+		http.Redirect(res, req, "/user-home", 302)
 		return
 	}
 	if userType == "" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/login", 301)
+		http.Redirect(res, req, "/login", 302)
 		return
 	}
 	fmt.Println("Method:PublisNewBook", req.Method)
@@ -303,7 +303,7 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 		//error checking
 		if err != nil {
 			fmt.Println(err)
-			//	http.Redirect(res, req, "/publish-new-book", 301)
+			//	http.Redirect(res, req, "/publish-new-book", 302)
 			data.Message = "Problem Uploading Cover photo of book- Empty Cover"
 			session.Save(req, res)
 			view.PublishNewBook(res, req, data)
@@ -312,7 +312,7 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 		}
 		if err2 != nil {
 			fmt.Println(err2)
-			//			http.Redirect(res, req, "/publish-new-book", 301)
+			//			http.Redirect(res, req, "/publish-new-book", 302)
 			data.Message = "Problem Uploading Pdf file of book- Empty Pdf"
 			session.Save(req, res)
 			view.PublishNewBook(res, req, data)
@@ -334,7 +334,7 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 		f2, err2 := os.OpenFile("."+string(os.PathSeparator)+"uploads"+string(os.PathSeparator)+"Pdf"+string(os.PathSeparator)+handler2.Filename, os.O_WRONLY|os.O_CREATE, 0666)
 		if err != nil {
 			fmt.Println(err)
-			//			http.Redirect(res, req, "/publish-new-book", 301)
+			//			http.Redirect(res, req, "/publish-new-book", 302)
 			data.Message = "Problem Uploading  Cover photo of book"
 			session.Save(req, res)
 			view.PublishNewBook(res, req, data)
@@ -342,7 +342,7 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 		}
 		if err2 != nil {
 			fmt.Println(err2)
-			//	http.Redirect(res, req, "/publish-new-book", 301)
+			//	http.Redirect(res, req, "/publish-new-book", 302)
 			data.Message = "Problem Uploading Pdf file of book"
 			session.Save(req, res)
 			view.PublishNewBook(res, req, data)
@@ -361,7 +361,7 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 		tmpBook := model.GetBookByIsbn(isbn)
 		if tmpBook.Isbn == isbn {
 			fmt.Println("Isbn already used")
-			//http.Redirect(res, req, "/publish-new-book", 301)
+			//http.Redirect(res, req, "/publish-new-book", 302)
 			data.Message = "Isbn already used"
 			session.Save(req, res)
 			view.PublishNewBook(res, req, data)
@@ -374,7 +374,7 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 		book.Set(bid, publisher_id, title, description, handler.Filename, isbn, handler2.Filename, 0, 0)
 		model.SetBook(book)
 		fmt.Println("New Book Store successfully")
-		//	http.Redirect(res, req, "/publish-new-book", 301)
+		//	http.Redirect(res, req, "/publish-new-book", 302)
 		data.Message = "New Book Stored successfully"
 		session.Save(req, res)
 		view.PublishNewBook(res, req, data)
@@ -402,7 +402,7 @@ func UpdateBook(res http.ResponseWriter, req *http.Request) {
 
 	if TmpBook.PubId != uid {
 		session.Save(req, res)
-		http.Redirect(res, req, "/user-home", 301)
+		http.Redirect(res, req, "/user-home", 302)
 		return
 	}
 	//access secured
@@ -492,12 +492,12 @@ func ReadBook(res http.ResponseWriter, req *http.Request) {
 	log.Println(userId, userType)
 	if userType != "admin" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/login", 301)
+		http.Redirect(res, req, "/login", 302)
 		return
 	}
 	var book_id = req.URL.Query().Get("book")
 	session.Save(req, res)
-	http.Redirect(res, req, "/uploads/Pdf/"+book_id+".pdf", 301)
+	http.Redirect(res, req, "/uploads/Pdf/"+book_id+".pdf", 302)
 }
 
 func ViewBook(res http.ResponseWriter, req *http.Request) {
@@ -507,7 +507,7 @@ func ViewBook(res http.ResponseWriter, req *http.Request) {
 	log.Println(userId, userType)
 	if userType == "" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/login", 301)
+		http.Redirect(res, req, "/login", 302)
 		return
 	}
 	uid := userId
@@ -567,12 +567,12 @@ func ViewBook(res http.ResponseWriter, req *http.Request) {
 			model.PublishBook(bid, 0)
 			data.Unpub = 0
 			session.Save(req, res)
-			http.Redirect(res, req, "/publishedbook", 301)
+			http.Redirect(res, req, "/publishedbook", 302)
 			return
 		} else if read == "read" {
 			//redirect to reading page
 			session.Save(req, res)
-			http.Redirect(res, req, "/uploads/Pdf/"+book_id+".pdf", 301)
+			http.Redirect(res, req, "/uploads/Pdf/"+book_id+".pdf", 302)
 			return
 		}
 	} else if userType == "publisher" {
@@ -593,7 +593,7 @@ func ViewBook(res http.ResponseWriter, req *http.Request) {
 		} else if read == "read" {
 			//redirec to reading  page
 			session.Save(req, res)
-			http.Redirect(res, req, "/uploads/Pdf/"+book_id+".pdf", 301)
+			http.Redirect(res, req, "/uploads/Pdf/"+book_id+".pdf", 302)
 			return
 		}
 	} else if userType == "member" {
@@ -611,7 +611,7 @@ func ViewBook(res http.ResponseWriter, req *http.Request) {
 		if read == "read" {
 			//redirect to reading page
 			session.Save(req, res)
-			http.Redirect(res, req, "/uploads/Pdf/"+book_id+".pdf", 301)
+			http.Redirect(res, req, "/uploads/Pdf/"+book_id+".pdf", 302)
 			return
 		}
 	}
@@ -647,12 +647,12 @@ func SubscribeBook(res http.ResponseWriter, req *http.Request) {
 
 	if userType == "" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/login", 301)
+		http.Redirect(res, req, "/login", 302)
 		return
 	}
 	if userType == "admin" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/user-home", 301)
+		http.Redirect(res, req, "/user-home", 302)
 		return
 	}
 
@@ -664,7 +664,7 @@ func SubscribeBook(res http.ResponseWriter, req *http.Request) {
 	bid, _ = strconv.Atoi(book_id)
 	model.SubScripeBook(bid, user_id)
 	session.Save(req, res)
-	http.Redirect(res, req, "/view-book?book="+book_id, 301)
+	http.Redirect(res, req, "/view-book?book="+book_id, 302)
 
 }
 
@@ -677,12 +677,12 @@ func UnsubscribeBook(res http.ResponseWriter, req *http.Request) {
 
 	if userType == "" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/login", 301)
+		http.Redirect(res, req, "/login", 302)
 		return
 	}
 	if userType == "admin" {
 		session.Save(req, res)
-		http.Redirect(res, req, "/user-home", 301)
+		http.Redirect(res, req, "/user-home", 302)
 		return
 	}
 	var book_id = req.URL.Query().Get("book")
@@ -692,5 +692,5 @@ func UnsubscribeBook(res http.ResponseWriter, req *http.Request) {
 	bid, _ = strconv.Atoi(book_id)
 	model.UnsubscribeBook(bid, user_id)
 	session.Save(req, res)
-	http.Redirect(res, req, "/view-book?book="+book_id, 301)
+	http.Redirect(res, req, "/view-book?book="+book_id, 302)
 }
