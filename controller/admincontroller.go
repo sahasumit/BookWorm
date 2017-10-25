@@ -21,9 +21,13 @@ func Admin(res http.ResponseWriter, req *http.Request) {
 //list of  All unpublished book for admin
 func UnPublishedBook(res http.ResponseWriter, req *http.Request) {
 	log.Println(req.URL.Path)
-	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
+
 	log.Println("Admin looking for unpublished book = ", userId, userType)
 	if userType != "admin" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
@@ -31,15 +35,19 @@ func UnPublishedBook(res http.ResponseWriter, req *http.Request) {
 	log.Println("Method :UnpublishedBook in Controller, List of All unpublished book and only admin can View")
 	var data model.UData
 	data.Books = model.GetBookList(0, 0)
+	session.Save(req, res)
 	view.UnPublishedBook(res, req, data)
 }
 
 //admin reviewing single book for publishing
 func AdminReviewBook(res http.ResponseWriter, req *http.Request) {
 
-	userId, userType := getUser(req)
-	log.Println(userId, userType)
+	//	log.Println(userId, userType)
+	session, _ := store.Get(req, "cookie-name")
+	//	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
 	if userType != "admin" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
@@ -49,19 +57,26 @@ func AdminReviewBook(res http.ResponseWriter, req *http.Request) {
 	bid, _ := strconv.Atoi(book_id)
 	book := model.GetBook(bid)
 	data.Book1 = book
+	session.Save(req, res)
 	view.AdminReviewBook(res, req, data)
 }
 
 func ApproveBook(res http.ResponseWriter, req *http.Request) {
-	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
 	log.Println(userId, userType)
 	if userType != "admin" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
+	//
 	var uid int
-	uid, _ = strconv.Atoi(userId)
 
+	uid = userId
+	//
 	book_id := req.URL.Query().Get("book")
 
 	//	bid, _ = strconv.Atoi(book_id)
@@ -70,6 +85,7 @@ func ApproveBook(res http.ResponseWriter, req *http.Request) {
 	data.Book1 = model.GetBook(bid)
 	log.Println("Package : Controller,Method : Approve Book, Book ID ; ", book_id, " PUBLISHER iD : ", data.Book1.PubId, " Logged In Id: ", uid)
 	if data.Book1.PubId == uid {
+		session.Save(req, res)
 		http.Redirect(res, req, "/un-published-book", 301)
 		return
 	}
@@ -77,13 +93,17 @@ func ApproveBook(res http.ResponseWriter, req *http.Request) {
 	log.Println("Book to be approved is = " + book_id)
 
 	model.PublishBook(bid, 1)
+	session.Save(req, res)
 	http.Redirect(res, req, "/un-published-book", 301)
 }
 
 func RejectBook(res http.ResponseWriter, req *http.Request) {
-	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
 	log.Println(userId, userType)
 	if userType != "admin" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
@@ -91,12 +111,16 @@ func RejectBook(res http.ResponseWriter, req *http.Request) {
 	log.Println("Book to be rejected is = " + book_id)
 	bid, _ := strconv.Atoi(book_id)
 	model.PublishBook(bid, 2)
+	session.Save(req, res)
 	http.Redirect(res, req, "/un-published-book", 301)
 }
 func UnpublishBook(res http.ResponseWriter, req *http.Request) {
-	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
 	log.Println(userId, userType)
 	if userType != "admin" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
@@ -105,13 +129,17 @@ func UnpublishBook(res http.ResponseWriter, req *http.Request) {
 	bid, _ := strconv.Atoi(book_id)
 	model.PublishBook(bid, 0)
 	model.UnSubForAll(bid)
+	session.Save(req, res)
 	http.Redirect(res, req, "/publishedbook", 301)
 }
 
 func SendNotification(res http.ResponseWriter, req *http.Request) {
-	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
 	log.Println(userId, userType)
 	if userType != "admin" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
@@ -119,13 +147,17 @@ func SendNotification(res http.ResponseWriter, req *http.Request) {
 	var data model.UData
 	bid, _ := strconv.Atoi(bookId)
 	data.Book1 = model.GetBook(bid)
+	session.Save(req, res)
 	view.SendNoti(res, req, data)
 }
 
 func PostNotification(res http.ResponseWriter, req *http.Request) {
-	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
 	log.Println(userId, userType)
 	if userType != "admin" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
@@ -135,14 +167,18 @@ func PostNotification(res http.ResponseWriter, req *http.Request) {
 	nd.BookId = bid
 	nd.AdminNotification = req.FormValue("noti")
 	model.SendNotification(nd)
+	session.Save(req, res)
 	http.Redirect(res, req, "/un-published-book", 301)
 }
 
 func UserList(res http.ResponseWriter, req *http.Request) {
 
-	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
 	log.Println(userId, userType)
 	if userType != "admin" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
@@ -151,6 +187,7 @@ func UserList(res http.ResponseWriter, req *http.Request) {
 	//var UL UserList
 
 	data.Users = model.GetUserList()
+	session.Save(req, res)
 	view.UserList(res, req, data)
 	//t, _ := template.ParseFiles("HTMLS/admin/userlist.html")
 	//t.Execute(res, UL)
@@ -159,9 +196,12 @@ func UserList(res http.ResponseWriter, req *http.Request) {
 
 func UserControl(res http.ResponseWriter, req *http.Request) {
 
-	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
 	log.Println(userId, userType)
 	if userType != "admin" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
@@ -179,5 +219,6 @@ func UserControl(res http.ResponseWriter, req *http.Request) {
 	}
 
 	model.SetActiveUser(uid, isb)
+	session.Save(req, res)
 	http.Redirect(res, req, "/user-list", 301)
 }

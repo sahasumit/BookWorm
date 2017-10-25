@@ -84,7 +84,9 @@ func HtmlHandlerMux() {
 	router.HandleFunc("/post-notification", controller.PostNotification)
 	router.HandleFunc("/user-control", controller.UserControl)
 	router.HandleFunc("/read-book", controller.ReadBook)
-
+	//------------------------------------
+	//	router.HandleFunc("/test", controller.Test)
+	//---------------------------------------
 	//undone yet in mvc fashion
 	/*http.HandleFunc("/view-user", ViewUser)//ar lagbe na view user
 	/*http.HandleFunc("/block-user", BlockUser)

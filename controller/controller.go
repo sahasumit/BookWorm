@@ -19,99 +19,38 @@ func Pr() {
 }
 
 func Home(res http.ResponseWriter, req *http.Request) {
-	userId, userType := getUser(req)
-	log.Println(userId, userType)
-	if userType != "" {
-		http.Redirect(res, req, "/user-home", 301)
-		return
-	}
+	session, _ := store.Get(req, "cookie-name")
+	clearSession(req)
+
 	var data model.UData
+	session.Save(req, res)
 	view.Home(res, req, data)
 }
 
 //var LoggedInUser model.User //set from session
 
-func Login(res http.ResponseWriter, req *http.Request) {
-	clearSession(res)
-	log.Println("method login", req.URL.Path, "Method = ", req.Method)
-	var data model.UData
-	log.Println("Logedin user = " + data.User1.Name)
-	//processing GET method
-	if req.Method != "POST" {
-		userId, userType := getUser(req)
-		if userId != "" {
-			log.Println("User Id from session = "+userId+"usertype = ", userType)
-			uid, err := strconv.Atoi(userId)
-			if err == nil {
-				log.Println("Logedin user = " + userId)
-				if uid > 0 {
-					http.Redirect(res, req, "/user-home", 301)
-					return
-				}
-			}
-		}
-		log.Println("Serving login Page!")
-		view.Login(res, req, data)
-		return
-	}
-
-	//processing POST method
-	req.ParseForm()
-	email := html.EscapeString(req.FormValue("email"))
-	password := html.EscapeString(req.FormValue("password"))
-	log.Println("User Login Attempt by: ", email, " ", password)
-	var user model.User
-	user = model.GetUser(email)
-
-	if user.Email != email {
-		log.Println("User not found")
-		data.Message = "Invalid Email!"
-		view.Login(res, req, data)
-		return
-	}
-	if user.Password != password {
-		log.Println("Password does not match")
-		data.Message = "Incorrect Password!!"
-		view.Login(res, req, data)
-		return
-	}
-
-	//if user is blocked redirect him
-	if user.IsActive == 0 {
-		log.Println("User is blocked")
-		data.Message = "User is Blocked!"
-		view.Login(res, req, data)
-		return
-	}
-
-	//Set Session for newly loggedIn user here****
-	//**********************************************
-	//	LoggedInUser = user
-	uid := strconv.Itoa(user.UserId)
-	setSession(uid, user.UserType, res)
-	log.Println("Welcome success login id = " + uid + " Name = " + user.Name)
-	//redirect according to user type
-	data.Message = "Welcome " + user.Name + "! Login Succesful!!"
-	data.User1 = user
-	http.Redirect(res, req, "/user-home", 301) // redirect to user home(admin/pub/member)
-}
-
 func Logout(res http.ResponseWriter, req *http.Request) {
-	clearSession(res)
-	clearSession(res)
+	session, _ := store.Get(req, "cookie-name")
+	clearSession(req)
+	session.Save(req, res)
 	http.Redirect(res, req, "/", 302)
 }
 func UserHome(res http.ResponseWriter, req *http.Request) {
 	var data model.UData
 	log.Println(req.URL.Path, "Method = ", req.Method)
-	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
 	log.Println(userId, userType)
-	if userId == "" {
+	if userType == "" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/login", 301)
 		return
 	}
-	uid, _ := strconv.Atoi(userId)
+	uid := userId
+
 	if uid == 0 {
+		session.Save(req, res)
 		http.Redirect(res, req, "/login", 301)
 		return
 	}
@@ -121,23 +60,21 @@ func UserHome(res http.ResponseWriter, req *http.Request) {
 		data.Books = model.SubscriptionList(data.User1.UserId)
 	}
 	data.Message = "Welcome " + data.User1.Name + "!!"
+	session.Save(req, res)
 	view.UserHome(res, req, data)
 	return
 }
 
 func SignUp(res http.ResponseWriter, req *http.Request) {
 
-	userId, userType := getUser(req)
-	log.Println(userId, userType)
-	if userType != "" {
-		http.Redirect(res, req, "/user-home", 301)
-		return
-	}
+	clearSession(req)
+	session, _ := store.Get(req, "cookie-name")
 
 	var data model.UData
 	log.Println("Entered Method : SignUp")
 	//before clicking submit option
 	if req.Method != "POST" {
+		session.Save(req, res)
 		view.SignUp(res, req, data)
 		return
 	}
@@ -155,6 +92,7 @@ func SignUp(res http.ResponseWriter, req *http.Request) {
 	if password1 != password2 {
 		log.Println("Password does not match")
 		data.Message = "Password does not match"
+		session.Save(req, res)
 		view.SignUp(res, req, data)
 		//http.Redirect(res, req, "/signup", 301)
 		return
@@ -167,6 +105,7 @@ func SignUp(res http.ResponseWriter, req *http.Request) {
 	if emailexist == email {
 		log.Println("Email already used")
 		data.Message = "Email already used"
+		session.Save(req, res)
 		view.SignUp(res, req, data)
 		return
 	}
@@ -178,6 +117,7 @@ func SignUp(res http.ResponseWriter, req *http.Request) {
 	println("Sign Up successfull ", user_id)
 	//storing new user in database user tab
 	println("Stored in database")
+	session.Save(req, res)
 	http.Redirect(res, req, "/login", 301)
 }
 
@@ -192,9 +132,12 @@ func About(res http.ResponseWriter, req *http.Request) {
 
 func PublishedBook(res http.ResponseWriter, req *http.Request) {
 	log.Println(req.URL.Path, " Method = ", req.Method)
-	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
 	log.Println(userId, userType)
-	if userId == "" {
+	if userType == "" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/login", 301)
 		return
 	}
@@ -207,6 +150,7 @@ func PublishedBook(res http.ResponseWriter, req *http.Request) {
 		data.Books = model.GetBookList(1, p) // 1 - publishedbook, 0 - No specific user
 		//fmt.Fprint(res, "hello")
 		//log.Println(data.Books)
+		session.Save(req, res)
 		view.PublishedBook(res, req, data)
 		return
 	}
@@ -224,6 +168,7 @@ func PublishedBook(res http.ResponseWriter, req *http.Request) {
 	//fmt.Fprint(res, "hello")
 	log.Println(data.Books)
 	data.Message = sortBy
+	session.Save(req, res)
 	view.PublishedBook(res, req, data)
 	return
 }
@@ -232,13 +177,18 @@ func MyPublishedBook(res http.ResponseWriter, req *http.Request) {
 
 	log.Println(req.URL.Path)
 	log.Println("MyPublishedBook() - method = ", req.Method)
-	userId, userType := getUser(req)
+	//	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
 	log.Println("Admin looking for unpublished book = ", userId, userType)
 	if userType == "member" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
 	if userType == "" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/login", 301)
 		return
 	}
@@ -246,26 +196,31 @@ func MyPublishedBook(res http.ResponseWriter, req *http.Request) {
 	//
 	var data model.UData
 	var BL model.BookList
-	log.Println("Method:MyPublishedBook -> Publisher id = " + userId)
+	log.Println("Method:MyPublishedBook -> Publisher id = ", userId)
 	//Take publisherid(LoggedInUser.UserId) from session
 	//finding unpublished book id from 	database
 	var uid int
-	uid, _ = strconv.Atoi(userId)
+	uid = userId
 	BL.Blist = model.GetBookList(1, uid) // 1 - publishedbook, 0 - No specific user
 	data.Books = BL.Blist
+	session.Save(req, res)
 	view.MyPublishedBook(res, req, data)
 }
 
 func MyUnPublishedBook(res http.ResponseWriter, req *http.Request) {
 
 	log.Println(req.URL.Path)
-	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
 	log.Println("Admin looking for unpublished book = ", userId, userType)
 	if userType == "member" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
 	if userType == "" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/login", 301)
 		return
 	}
@@ -277,10 +232,11 @@ func MyUnPublishedBook(res http.ResponseWriter, req *http.Request) {
 	//Take publisherid(LoggedInUser.UserId) from session
 	//finding unpublished book id from 	database
 	var uid int
-	uid, _ = strconv.Atoi(userId)
+	uid = userId
 	data.Books = model.GetBookList(0, uid) // 1 - publishedbook, 0 - No specific user
 	//t, _ := template.ParseFiles("HTMLS/my-unpublished-book.html")
 	//t.Execute(res, BL)
+	session.Save(req, res)
 	view.MyUnPublishedBook(res, req, data)
 }
 
@@ -288,13 +244,18 @@ func MyUnPublishedBook(res http.ResponseWriter, req *http.Request) {
 func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 
 	log.Println(req.URL.Path)
-	userId, userType := getUser(req)
+	//	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
 	log.Println(" ", userId, userType)
 	if userType == "member" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
 	if userType == "" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/login", 301)
 		return
 	}
@@ -309,7 +270,7 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 		var book_id string
 		book_id = strconv.Itoa(bid)
 		var uid int
-		uid, _ = strconv.Atoi(userId)
+		uid = userId
 		//finding book publisher id
 		publisher_id := uid //it is temporary finally session will generat publisher_id
 
@@ -319,16 +280,19 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 		isbn := req.FormValue("isbn")
 		if title == "" {
 			data.Message = "Title can not be null"
+			session.Save(req, res)
 			view.PublishNewBook(res, req, data)
 			return
 		}
 		if description == "" {
 			data.Message = "Description can not be null"
+			session.Save(req, res)
 			view.PublishNewBook(res, req, data)
 			return
 		}
 		if isbn == "" {
 			data.Message = "Isbn can not be null"
+			session.Save(req, res)
 			view.PublishNewBook(res, req, data)
 			return
 		}
@@ -341,6 +305,7 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 			fmt.Println(err)
 			//	http.Redirect(res, req, "/publish-new-book", 301)
 			data.Message = "Problem Uploading Cover photo of book- Empty Cover"
+			session.Save(req, res)
 			view.PublishNewBook(res, req, data)
 
 			return
@@ -349,6 +314,7 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 			fmt.Println(err2)
 			//			http.Redirect(res, req, "/publish-new-book", 301)
 			data.Message = "Problem Uploading Pdf file of book- Empty Pdf"
+			session.Save(req, res)
 			view.PublishNewBook(res, req, data)
 			return
 		}
@@ -370,6 +336,7 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 			fmt.Println(err)
 			//			http.Redirect(res, req, "/publish-new-book", 301)
 			data.Message = "Problem Uploading  Cover photo of book"
+			session.Save(req, res)
 			view.PublishNewBook(res, req, data)
 			return
 		}
@@ -377,6 +344,7 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 			fmt.Println(err2)
 			//	http.Redirect(res, req, "/publish-new-book", 301)
 			data.Message = "Problem Uploading Pdf file of book"
+			session.Save(req, res)
 			view.PublishNewBook(res, req, data)
 			return
 		}
@@ -395,6 +363,7 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 			fmt.Println("Isbn already used")
 			//http.Redirect(res, req, "/publish-new-book", 301)
 			data.Message = "Isbn already used"
+			session.Save(req, res)
 			view.PublishNewBook(res, req, data)
 			return
 		}
@@ -407,9 +376,11 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 		fmt.Println("New Book Store successfully")
 		//	http.Redirect(res, req, "/publish-new-book", 301)
 		data.Message = "New Book Stored successfully"
+		session.Save(req, res)
 		view.PublishNewBook(res, req, data)
 	} else {
 		//data.Message = ""
+		session.Save(req, res)
 		view.PublishNewBook(res, req, data)
 	}
 }
@@ -418,16 +389,19 @@ func PublishNewBook(res http.ResponseWriter, req *http.Request) {
 func UpdateBook(res http.ResponseWriter, req *http.Request) {
 	//
 	log.Println(req.URL.Path)
-	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
+
 	log.Println(userId, userType)
-	uid, _ := strconv.Atoi(userId)
+	uid := userId
 	var book_id = req.URL.Query().Get("book")
 	bid, _ := strconv.Atoi(book_id)
 	var TmpBook model.BookP
 	TmpBook = model.GetBook(bid)
 
 	if TmpBook.PubId != uid {
-
+		session.Save(req, res)
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
@@ -438,7 +412,7 @@ func UpdateBook(res http.ResponseWriter, req *http.Request) {
 	data.Noti = model.GetNotification(data.Book1.BookId)
 	if req.Method != http.MethodPost {
 		fmt.Println("Method:UpdateBook GET Method, redirect from : /my-unpublished-book")
-
+		session.Save(req, res)
 		view.UpdateBook(res, req, data)
 		return
 	}
@@ -506,30 +480,37 @@ func UpdateBook(res http.ResponseWriter, req *http.Request) {
 	}
 
 	log.Println("Package: Controller, Method: UpdateBook, Book ID : ", data.Noti.BookId, " Notification : ", data.Noti.AdminNotification)
-
+	session.Save(req, res)
 	view.UpdateBook(res, req, data)
 
 }
 
 func ReadBook(res http.ResponseWriter, req *http.Request) {
-	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
 	log.Println(userId, userType)
 	if userType != "admin" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/login", 301)
 		return
 	}
 	var book_id = req.URL.Query().Get("book")
+	session.Save(req, res)
 	http.Redirect(res, req, "/uploads/Pdf/"+book_id+".pdf", 301)
 }
 
 func ViewBook(res http.ResponseWriter, req *http.Request) {
-	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
 	log.Println(userId, userType)
 	if userType == "" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/login", 301)
 		return
 	}
-	uid, _ := strconv.Atoi(userId)
+	uid := userId
 	var book_id = req.URL.Query().Get("book")
 	fmt.Println("Requested book ID : ", book_id)
 	bid, _ := strconv.Atoi(book_id)
@@ -568,6 +549,7 @@ func ViewBook(res http.ResponseWriter, req *http.Request) {
 		data.RatRev = model.GetRatingReview(bid)
 		log.Println("GET -> Rating Review = ", data.RatRev)
 		//log.Println(data.RatRev)
+		session.Save(req, res)
 		view.ViewBook(res, req, data)
 		return
 	}
@@ -584,10 +566,12 @@ func ViewBook(res http.ResponseWriter, req *http.Request) {
 			log.Println("unpublishing bookid = ", bid, data)
 			model.PublishBook(bid, 0)
 			data.Unpub = 0
+			session.Save(req, res)
 			http.Redirect(res, req, "/publishedbook", 301)
 			return
 		} else if read == "read" {
 			//redirect to reading page
+			session.Save(req, res)
 			http.Redirect(res, req, "/uploads/Pdf/"+book_id+".pdf", 301)
 			return
 		}
@@ -608,6 +592,7 @@ func ViewBook(res http.ResponseWriter, req *http.Request) {
 			data.Read = 0
 		} else if read == "read" {
 			//redirec to reading  page
+			session.Save(req, res)
 			http.Redirect(res, req, "/uploads/Pdf/"+book_id+".pdf", 301)
 			return
 		}
@@ -625,6 +610,7 @@ func ViewBook(res http.ResponseWriter, req *http.Request) {
 		}
 		if read == "read" {
 			//redirect to reading page
+			session.Save(req, res)
 			http.Redirect(res, req, "/uploads/Pdf/"+book_id+".pdf", 301)
 			return
 		}
@@ -648,52 +634,63 @@ func ViewBook(res http.ResponseWriter, req *http.Request) {
 	data.RatRev = model.GetRatingReview(bid)
 	log.Println("POST -> Rating Review = ", data.RatRev)
 	log.Println("Button permission form userId ", userId, " Read,Sub,Unsub,Unpub", data.Read, data.Sub, data.Unsub, data.Unpub)
+	session.Save(req, res)
 	view.ViewBook(res, req, data)
 }
 
 func SubscribeBook(res http.ResponseWriter, req *http.Request) {
 
-	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
 	log.Println(userId, userType)
 
 	if userType == "" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/login", 301)
 		return
 	}
 	if userType == "admin" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
 
 	//
 	var book_id = req.URL.Query().Get("book")
-	var user_id, _ = strconv.Atoi(userId)
+	var user_id = userId
 	log.Println("Method: SubscribeBook,  Entered with book id : ", book_id, " and  user id: ", user_id)
 	var bid int
 	bid, _ = strconv.Atoi(book_id)
 	model.SubScripeBook(bid, user_id)
+	session.Save(req, res)
 	http.Redirect(res, req, "/view-book?book="+book_id, 301)
 
 }
 
 func UnsubscribeBook(res http.ResponseWriter, req *http.Request) {
 
-	userId, userType := getUser(req)
+	session, _ := store.Get(req, "cookie-name")
+	userId := session.Values["UserID"].(int)
+	userType := session.Values["UserType"].(string)
 	log.Println(userId, userType)
 
 	if userType == "" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/login", 301)
 		return
 	}
 	if userType == "admin" {
+		session.Save(req, res)
 		http.Redirect(res, req, "/user-home", 301)
 		return
 	}
 	var book_id = req.URL.Query().Get("book")
-	var user_id, _ = strconv.Atoi(userId)
+	var user_id = userId
 	log.Println("Method: UnubscribeBook,  Entered with book id : ", book_id, " and  user id: ", user_id)
 	var bid int
 	bid, _ = strconv.Atoi(book_id)
 	model.UnsubscribeBook(bid, user_id)
+	session.Save(req, res)
 	http.Redirect(res, req, "/view-book?book="+book_id, 301)
 }

@@ -31,4 +31,5 @@ This is a web app made with GO
  * `github.com/gorilla/securecookie`
  * `github.com/gorilla/mux`
  * `github.com/go-sql-driver/mysql`
+ * `github.com/gorilla/sessions`
  -------

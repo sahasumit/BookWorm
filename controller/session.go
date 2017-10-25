@@ -1,55 +1,37 @@
 package controller
 
 import (
-	//    "fmt"
 	"net/http"
 
-	"github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
 )
 
-// cookie handling
-
-var cookieHandler = securecookie.New(
-	securecookie.GenerateRandomKey(64),
-	securecookie.GenerateRandomKey(32),
+var (
+	// key must be 16, 24 or 32 bytes long (AES-128, AES-192 or AES-256)
+	key   = []byte("super-secret-key")
+	store = sessions.NewCookieStore(key)
 )
 
-func getUser(req *http.Request) (userID, userType string) {
-	cookie, err := req.Cookie("session")
-	if err == nil {
-		cookieValue := make(map[string]string)
-		if err = cookieHandler.Decode("session", cookie.Value, &cookieValue); err == nil {
-			userID = cookieValue["name"]
-			userType = cookieValue["userType"]
-		}
-	}
-	return userID, userType
+//func getUser(req *http.Request) (userID, userType string) {
+//	session, _ := store.Get(req, "cookie-name")
+//	userID := session.Values["UserID"]
+//	userType: = session.Values["UserType"]
+//	return userID, userType
+//}
+
+func setSession(userID int, userType string, req *http.Request) {
+	session, _ := store.Get(req, "cookie-name")
+	session.Values["UserID"] = userID
+	session.Values["UserType"] = userType
+	session.Values["LoggedIn"] = "True"
 }
 
-func setSession(userID string, userType string, res http.ResponseWriter) {
-	value := map[string]string{
-		"name":     userID,
-		"userType": userType,
-	}
-	encoded, err := cookieHandler.Encode("session", value)
-	if err == nil {
-		cookie := &http.Cookie{
-			Name:  "session",
-			Value: encoded,
-			Path:  "/",
-		}
-		http.SetCookie(res, cookie)
-	}
-}
+func clearSession(req *http.Request) {
+	session, _ := store.Get(req, "cookie-name")
 
-func clearSession(res http.ResponseWriter) {
-	cookie := &http.Cookie{
-		Name:   "session",
-		Value:  "",
-		Path:   "/",
-		MaxAge: -1,
+	for k := range session.Values {
+		delete(session.Values, k)
 	}
-	http.SetCookie(res, cookie)
 }
 
 /*
