@@ -2,6 +2,7 @@ package controller
 
 import (
 	//"html/template"
+
 	"log"
 	"net/http"
 	"strconv"
@@ -184,14 +185,9 @@ func UserList(res http.ResponseWriter, req *http.Request) {
 	}
 	log.Println("Package : Controller ,Method : UserList  Admin ", userId, " Entered to view user list")
 	var data model.UData
-	//var UL UserList
-
 	data.Users = model.GetUserList()
 	session.Save(req, res)
 	view.UserList(res, req, data)
-	//t, _ := template.ParseFiles("HTMLS/admin/userlist.html")
-	//t.Execute(res, UL)
-
 }
 
 func UserControl(res http.ResponseWriter, req *http.Request) {
@@ -203,6 +199,9 @@ func UserControl(res http.ResponseWriter, req *http.Request) {
 	if userType != "admin" {
 		session.Save(req, res)
 		http.Redirect(res, req, "/user-home", 302)
+		return
+	}
+	if req.Method != "Get" {
 		return
 	}
 	userid := req.URL.Query().Get("userid")
