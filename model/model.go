@@ -35,10 +35,10 @@ func GetUser(Email string) User {
 	}
 	return user
 }
-func GetUserList() []User {
+func GetUserList(pagestart, pagesize int) []User {
 	var u User
 	var ul []User
-	rows, err := dbcon.Db.Query("SELECT * FROM user_info WHERE user_type != 'admin'")
+	rows, err := dbcon.Db.Query("SELECT * FROM user_info LIMIT ?,?", pagestart, pagesize)
 	if err != nil {
 		log.Println(err)
 	}

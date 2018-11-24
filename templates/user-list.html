@@ -3,18 +3,25 @@
 {{template "nav-auth"}}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <h1> List Of Users:</h1>
+<ul class="pagination pagination-lg">
+  <li><a href="#" onclick="loadPage(0)">1</a></li>
+  <li><a href="#" onclick="loadPage(1)">2</a></li>
+  <li><a href="#" onclick="loadPage(2)">3</a></li>
+  <li><a href="#" onclick="loadPage(3)">4</a></li>
+  <li><a href="#" onclick="loadPage(4)">5</a></li>
+</ul>
 <table id="userListTable">
+  <thead>
   <tr>
     <th>Name</th>
     <th>Email</th>
     <th>Type</th>
     <th>Status</th>
   </tr>
-
+</thead>
+<tbody>
+</tbody>
 </table>
-
-
-
 {{template "footer"}}
 <style>
   table {
@@ -35,23 +42,25 @@
   </style>
 <script>
   $(document).ready(function(){
+      loadPage(0);
+
+  });
+  var loadPage = function(pageNumber){
+    $("#userListTable tbody").empty()
     $.ajax({
       type: "GET",
       dataType: "json",
-      contentType:"application/json; charset=utf-8",
-      url:"/Users",
-      data:null,
+      contentType: "application/json; charset=utf-8",
+      url: "/Users",
+      data: {"Page": pageNumber},
       Cache: false,
       success: function(data){
-
            $.each(data, function(index, value){
                var temp = '<tr><td>' + value.Name + '</td><td>' + value.Email + '</td><td>' + value.UserType + '</td><td>' + value.IsActive + '</td></tr>';
-               $("#userListTable").append(temp);
+               $("#userListTable tbody").append(temp);
            });
       }
     });
-  });
-
+  }
   </script>
-
 {{end}}

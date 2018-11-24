@@ -185,7 +185,7 @@ func UserList(res http.ResponseWriter, req *http.Request) {
 	}
 	log.Println("Package : Controller ,Method : UserList  Admin ", userId, " Entered to view user list")
 	var data model.UData
-	data.Users = model.GetUserList()
+	//data.Users = model.GetUserList()
 	session.Save(req, res)
 	view.UserList(res, req, data)
 }
