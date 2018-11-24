@@ -1,4 +1,5 @@
 package controller
+
 import (
 	"html"
 	"log"
@@ -63,4 +64,3 @@ func SignUp(res http.ResponseWriter, req *http.Request) {
 	session.Save(req, res)
 	http.Redirect(res, req, "/login", 302)
 }
-

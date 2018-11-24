@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/sahasumit/BookWorm/Api"
 	"github.com/sahasumit/BookWorm/Controller"
 	"github.com/sahasumit/BookWorm/model/configs"
 	"github.com/sahasumit/BookWorm/model/dbcon"
@@ -46,6 +47,7 @@ func HtmlHandlerMux() {
 	router.HandleFunc("/post-notification", controller.PostNotification)
 	router.HandleFunc("/user-control", controller.UserControl)
 	router.HandleFunc("/read-book", controller.ReadBook)
+	router.HandleFunc("/Users", Api.GetUsers)
 }
 
 var router = mux.NewRouter()

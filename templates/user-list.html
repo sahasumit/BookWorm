@@ -1,10 +1,12 @@
 {{define "user-list"}}
 {{template "header"}}
 {{template "nav-auth"}}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <h1> List Of Users:</h1>
 <table id="userListTable">
   <tr>
     <th>Name</th>
+    <th>Email</th>
     <th>Type</th>
     <th>Status</th>
   </tr>
@@ -20,23 +22,36 @@
       border-collapse: collapse;
       width: 100%;
   }
-  
+
   td, th {
       border: 1px solid #dddddd;
       text-align: left;
       padding: 8px;
   }
-  
+
   tr:nth-child(even) {
       background-color: #dddddd;
   }
   </style>
 <script>
   $(document).ready(function(){
-    debugger;
-  });
-  
-  </script>
-  
-{{end}}
+    $.ajax({
+      type: "GET",
+      dataType: "json",
+      contentType:"application/json; charset=utf-8",
+      url:"/Users",
+      data:null,
+      Cache: false,
+      success: function(data){
 
+           $.each(data, function(index, value){
+               var temp = '<tr><td>' + value.Name + '</td><td>' + value.Email + '</td><td>' + value.UserType + '</td><td>' + value.IsActive + '</td></tr>';
+               $("#userListTable").append(temp);
+           });
+      }
+    });
+  });
+
+  </script>
+
+{{end}}
