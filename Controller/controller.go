@@ -37,9 +37,18 @@ func Logout(res http.ResponseWriter, req *http.Request) {
 func UserHome(res http.ResponseWriter, req *http.Request) {
 	var data model.UData
 	log.Println(req.URL.Path, "Method = ", req.Method)
+	//get session id from browser cookie
 	session, _ := store.Get(req, "cookie-name")
-	userId := session.Values["UserID"].(int)
-	userType := session.Values["UserType"].(string)
+	sessionID := session.Values["sessionID"].(string)
+
+	//get session information from redis
+	pool := newPool()
+	conn := pool.Get()
+	defer conn.Close()
+	sessionInformation := getStruct(conn, sessionID)
+	userId := sessionInformation.UserID
+	userType := sessionInformation.UserType
+	
 	log.Println(userId, userType)
 	if userType == "" {
 		session.Save(req, res)

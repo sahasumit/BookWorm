@@ -19,11 +19,12 @@ var (
 //	return userID, userType
 //}
 
-func setSession(userID int, userType string, req *http.Request) {
+func setSession(sessionID string, userID int, userType string, req *http.Request) {
 	session, _ := store.Get(req, "cookie-name")
-	session.Values["UserID"] = userID
-	session.Values["UserType"] = userType
-	session.Values["LoggedIn"] = "True"
+	session.Values["sessionID"] = sessionID
+	//session.Values["UserID"] = userID
+	//session.Values["UserType"] = userType
+	//session.Values["LoggedIn"] = "True"
 }
 
 func clearSession(req *http.Request) {

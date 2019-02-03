@@ -63,7 +63,7 @@ func main() {
 	HtmlHandlerMux()
 	//creating server
 
-	log.Println("Server runing! go to", Config.Server.Host+":"+Config.Server.Port)
+	log.Println("sumit saha  shawon rrr Server runing! go to", Config.Server.Host+":"+Config.Server.Port)
 	err := http.ListenAndServe(Config.Server.Host+":"+Config.Server.Port, nil)
 	if err != nil {
 		log.Println(err)
