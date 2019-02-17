@@ -2,31 +2,25 @@ package controller
 
 import (
 	"net/http"
-
 	"github.com/gorilla/sessions"
+	"encoding/json"
+	"github.com/gomodule/redigo/redis"
+		"log"
 )
 
 var (
-	// key must be 16, 24 or 32 bytes long (AES-128, AES-192 or AES-256)
 	key   = []byte("super-secret-key")
 	store = sessions.NewCookieStore(key)
 )
-
-//func getUser(req *http.Request) (userID, userType string) {
-//	session, _ := store.Get(req, "cookie-name")
-//	userID := session.Values["UserID"]
-//	userType: = session.Values["UserType"]
-//	return userID, userType
-//}
-
+//browser side section--------------------------------------------------------------
+// set session data at browser cookie
 func setSession(sessionID string, userID int, userType string, req *http.Request) {
+
 	session, _ := store.Get(req, "cookie-name")
 	session.Values["sessionID"] = sessionID
-	//session.Values["UserID"] = userID
-	//session.Values["UserType"] = userType
-	//session.Values["LoggedIn"] = "True"
 }
 
+// remove session data from browser cookie
 func clearSession(req *http.Request) {
 	session, _ := store.Get(req, "cookie-name")
 
@@ -34,80 +28,82 @@ func clearSession(req *http.Request) {
 		delete(session.Values, k)
 	}
 }
+//------------------------------------------------------------------------------------------
 
-/*
-// login handler
-
-func loginHandler(response http.ResponseWriter, request *http.Request) {
-    name := request.FormValue("name")
-    pass := request.FormValue("password")
-    redirectTarget := "/"
-    if name != "" && pass != "" {
-        // .. check credentials ..
-        setSession(name, response)
-        redirectTarget = "/internal"
-    }
-    http.Redirect(response, request, redirectTarget, 302)
+// server side session data storing in redis------------------------------------------------
+type User struct {
+	UserID  int
+	UserType  string
+	LoggedIn bool
 }
 
-// logout handler
-
-func logoutHandler(response http.ResponseWriter, request *http.Request) {
-    clearSession(response)
-    http.Redirect(response, request, "/", 302)
+func newPool() *redis.Pool {
+	return &redis.Pool{
+		// Maximum number of idle connections in the pool.
+		MaxIdle: 80,
+		// max number of connections
+		MaxActive: 12000,
+		// Dial is an application supplied function for creating and
+		// configuring a connection.
+		Dial: func() (redis.Conn, error) {
+			c, err := redis.Dial("tcp", ":6379")
+			if err != nil {
+				panic(err.Error())
+			}
+			return c, err
+		},
+	}
 }
 
-// index page
+func setStruct(c redis.Conn, sessionID string, userID int, userType string) error {
+	//const objectPrefix string = "user:"
+	sessionInformation := User{
+		UserID:  userID,
+		UserType:userType,
+		LoggedIn:true,
+	}
+	// serialize User object to JSON
+	json, err := json.Marshal(sessionInformation)
+	if err != nil {
+		return err
+	}
 
-const indexPage = `
-<h1>Login</h1>
-<form method="post" action="/login">
-    <label for="name">User name</label>
-    <input type="text" id="name" name="name">
-    <label for="password">Password</label>
-    <input type="password" id="password" name="password">
-    <button type="submit">Login</button>
-</form>
-`
-
-func indexPageHandler(response http.ResponseWriter, request *http.Request) {
-    fmt.Fprintf(response, indexPage)
+	// SET object
+	_, err = c.Do("SET",sessionID, json)
+	if err != nil {
+		return err
+	}
+  log.Println(sessionID)
+	return nil
 }
 
-// internal page
-
-const internalPage = `
-<h1>Internal</h1>
-<hr>
-<small>User: %s</small>
-<form method="post" action="/logout">
-    <button type="submit">Logout</button>
-</form>
-`
-
-func internalPageHandler(response http.ResponseWriter, request *http.Request) {
-    userName := getUserName(request)
-    if userName != "" {
-        fmt.Fprintf(response, internalPage, userName)
-    } else {
-        http.Redirect(response, request, "/", 302)
-    }
+func getStruct(c redis.Conn, sessionID string) User {
+	s, err := redis.String(c.Do("GET", sessionID))
+	if err == redis.ErrNil {
+		log.Println("User does not exist")
+	}
+	sessionInformation := User{}
+	err = json.Unmarshal([]byte(s), &sessionInformation)
+	return sessionInformation
 }
 
-// server main method
-
-var router = mux.NewRouter()
-
-func main() {
-
-    router.HandleFunc("/", indexPageHandler)
-    router.HandleFunc("/internal", internalPageHandler)
-
-    router.HandleFunc("/login", loginHandler).Methods("POST")
-    router.HandleFunc("/logout", logoutHandler).Methods("POST")
-
-    http.Handle("/", router)
-    http.ListenAndServe(":9000", nil)
+func setSessionRedis(sessionID string, userID int, userType string){
+	pool := newPool()
+	conn := pool.Get()
+	defer conn.Close()
+	setStruct(conn, sessionID, userID, userType)
 }
+//-----------------------------------------------------------------------------------------------
 
-*/
+//validate session data from redis------------------------------------------------------------------------------------------
+func validateLogin(res http.ResponseWriter, req *http.Request) User{
+	session, _ := store.Get(req, "cookie-name")
+	sessionID := session.Values["sessionID"].(string)
+	session.Save(req, res)
+	pool := newPool()
+	conn := pool.Get()
+	defer conn.Close()
+	sessionInformation := getStruct(conn, sessionID)
+	return sessionInformation
+}
+//-----------------------------------------------------------------------------------------
